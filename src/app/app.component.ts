@@ -1,5 +1,6 @@
-import { Component, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewEncapsulation } from '@angular/core';
 import * as ol from 'openlayers';
+import { MapstateService } from './mapstate.service';
 
 @Component({
   selector: 'app-root',
@@ -11,8 +12,17 @@ export class AppComponent implements AfterViewInit {
   title = 'app';
   map: ol.Map;
 
-  constructor() {
+  mapState: {center:[number,number], zoom:number};
 
+  constructor(private mapSvc:MapstateService) {
+    console.log(mapSvc)
+  }
+
+  ngOnInit(){
+    this.mapSvc.getState().subscribe((state)=>{
+      this.mapState = state;
+    })
+    
   }
 
   ngAfterViewInit() {
@@ -35,6 +45,8 @@ export class AppComponent implements AfterViewInit {
       let zoom = view.getZoom();
       let center = view.getCenter();
       console.log(center,zoom)
+
+      this.mapSvc.setState({center:center, zoom:zoom})
     })
   }
 
@@ -43,11 +55,21 @@ export class AppComponent implements AfterViewInit {
     this.map.getView().setCenter(center)
   }
 
+
+  setZoom(evt){
+    console.log(evt)
+    var view = this.map.getView();
+    this.mapSvc.setState({center:view.getCenter(), zoom:evt})
+  }
+
   zoom(value: '-'|'+'){
     let zoomControll:any = new ol.control.Zoom();
     zoomControll.getMap = ()=>{return this.map}
     //this.map.addControl(zoomControll)
     let delta = (value == '-')? -1: 1;
     zoomControll.zoomByDelta_(delta);
+    var view = this.map.getView();
+    this.mapSvc.setState({center:view.getCenter(), zoom:view.getZoom()})
   }
+
 }

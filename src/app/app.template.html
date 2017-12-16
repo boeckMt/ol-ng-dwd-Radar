@@ -2,3 +2,7 @@
 
 <button (click)="zoom('-')">-</button>
 <button (click)="zoom('+')">+</button>
+
+<input [ngModel]="mapState.zoom" (ngModelChange)="setZoom($event)" type="number">
+<div>zoom: {{ mapState.zoom }}</div>
+<div>center: {{mapState.center[0]}} ,{{mapState.center[1]}}</div>
