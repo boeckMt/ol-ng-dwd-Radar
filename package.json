@@ -24,6 +24,7 @@
     "@types/openlayers": "^4.3.12",
     "core-js": "^2.4.1",
     "openlayers": "^4.6.4",
+    "ows.js": "git+https://github.com/OSGeo/ows.js.git",
     "rxjs": "^5.5.2",
     "zone.js": "^0.8.14"
   },
