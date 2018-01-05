@@ -1,3 +1,5 @@
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@import "~material-design-icons/iconfont/material-icons.css";
 @import url('~openlayers/dist/ol.css');
 
 app-root{
@@ -7,20 +9,64 @@ app-root{
 
 header{
   margin-bottom: 0;
-
+  background: #f5f5f5;
+  height: 69px;
+  @media (max-width: 600px){
+    height: 61px;
+  }
   .title{
     margin-left: 1em;
+  }
+
+  .fill-space {
+    // This fills the remaining space, by using flexbox.
+    // Every toolbar row uses a flexbox row layout.
+    flex: 1 1 auto;
+  }
+
+  nav{
+    float: right;
   }
 }
 
 main{
-  height: calc(100%);
+  height: calc(100% - 197px);
+  @media (max-width: 600px){
+    height: calc(100% - 173px);
+  }
   width: 100%;
+
+  aside{
+    background: #f5f5f5;
+    position: absolute;
+    overflow: auto;
+    padding-left: 5px;
+    right: 0px;
+    top:69px;
+    height: calc(100% - 197px);
+    @media (max-width: 600px){
+      height: calc(100% - 173px);
+      top: 61px;
+    }
+  }
 }
 
 footer{
-      max-height: 60px;
       overflow: hidden;
+      height: 128px;
+      width: 100%;
+      @media (max-width: 600px){
+        height: 112px;
+      }
+
+      .title{
+        width: 100%;
+        white-space: normal;
+      }
+
+      app-time-slider{
+        width: 100%;
+      }
 }
 
 .map{

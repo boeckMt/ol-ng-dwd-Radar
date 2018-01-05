@@ -22,17 +22,23 @@ export class AppComponent implements AfterViewInit {
   slidervalue: string;
 
   legendurl: any;
-  animationId: any;
+  isLoading: boolean;
+  legend: boolean;
 
   constructor() {
     this.wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
-
+    this.isLoading = true;
+    this.legend = false;
     //this.datesString = [];
 
   }
 
   ngOnInit() {
     this.legendurl = this.getLegendForWms();
+  }
+
+  showLegend(){
+    this.legend = !this.legend;
   }
 
   ngAfterViewInit() {
@@ -122,8 +128,8 @@ export class AppComponent implements AfterViewInit {
       return response.text();
     }).then((text) => {
       var result: any = parser.read(text);
-
       this.findLayerInCaps(result, 'dwd:FX-Produkt');
+      this.isLoading = false;
     });
   }
 

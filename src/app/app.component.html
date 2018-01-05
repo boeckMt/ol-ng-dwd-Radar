@@ -1,26 +1,30 @@
 <header>
-  <h1>DWD Radar</h1>
-  <nav>
-
-  </nav>
+  <mat-toolbar>
+    <span>DWD Radar</span>
+    <span class="fill-space"></span>
+    <nav>
+      <mat-icon (click)="showLegend()">{{(legend)?'close':'menu'}}</mat-icon>
+    </nav>
+  </mat-toolbar>
+  <mat-progress-bar mode="{{(isLoading)?'indeterminate':''}}"></mat-progress-bar>
 </header>
-
 <main>
   <div id="map" class="map"></div>
+  <aside *ngIf="legend">
+    <span *ngIf="legendurl">
+      <img [src]="legendurl" alt="">
+    </span>
+  </aside>
 </main>
 <footer>
-  <app-time-slider [dates]="datesString" (dateChange)="sliderOnChange($event)"></app-time-slider>
-  <span>{{ slidervalue | date: 'dd/MM/yy - HH:mm:ssZ'}}</span>
-  <!-- | date: 'dd/MM/yy - HH:mm:ss' -->
-
-  <h3>Times</h3>
-  <ul>
-    <li *ngFor="let datetime of datesString">
-      {{datetime | date: 'dd/MM/yy - HH:mm:ssZ'}}
-    </li>
-  </ul>
-  <span *ngIf="legendurl">
-    <img [src]="legendurl" alt="">
-  </span>
-
+  <mat-toolbar>
+    <mat-toolbar-row>
+      <app-time-slider [dates]="datesString" (dateChange)="sliderOnChange($event)"></app-time-slider>
+    </mat-toolbar-row>
+    <mat-toolbar-row>
+      <span class="title">
+        {{ slidervalue | date: 'dd/MM/yy - HH:mm:ss'}}
+      </span>
+    </mat-toolbar-row>
+  </mat-toolbar>
 </footer>
