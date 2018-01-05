@@ -1,5 +1,0 @@
-<template class="slider-container">
-  <button type="button" name="button" (click)="setSlider('-')">prev</button>
-  <input [(ngModel)]="s_value" (change)="sliderOnChange($event)" type="range" min="{{s_min}}" max="{{s_max}}" value="{{s_min}}" step="{{s_step}}" class="slider">
-  <button type="button" name="button" (click)="setSlider('+')">next</button>
-</template>

@@ -1,0 +1,26 @@
+<header>
+  <h1>DWD Radar</h1>
+  <nav>
+
+  </nav>
+</header>
+
+<main>
+  <div id="map" class="map"></div>
+</main>
+<footer>
+  <app-time-slider [dates]="datesString" (dateChange)="sliderOnChange($event)"></app-time-slider>
+  <span>{{ slidervalue | date: 'dd/MM/yy - HH:mm:ssZ'}}</span>
+  <!-- | date: 'dd/MM/yy - HH:mm:ss' -->
+
+  <h3>Times</h3>
+  <ul>
+    <li *ngFor="let datetime of datesString">
+      {{datetime | date: 'dd/MM/yy - HH:mm:ssZ'}}
+    </li>
+  </ul>
+  <span *ngIf="legendurl">
+    <img [src]="legendurl" alt="">
+  </span>
+
+</footer>

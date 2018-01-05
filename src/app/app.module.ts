@@ -4,20 +4,19 @@ import { FormsModule }   from '@angular/forms';
 
 
 import { AppComponent } from './app.component';
-import { MapstateService } from './mapstate.service';
-import { SliderComponent } from './slider/slider.component';
+import { TimeSliderComponent } from './time-slider/time-slider.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    SliderComponent
+    TimeSliderComponent
   ],
   imports: [
     BrowserModule,
     FormsModule
   ],
-  providers: [MapstateService],
+  providers: [], //services...
   bootstrap: [AppComponent]
 })
 export class AppModule { }

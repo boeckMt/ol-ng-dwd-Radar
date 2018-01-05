@@ -4,12 +4,14 @@ import { Input, Output, EventEmitter } from '@angular/core';
 export interface IdateChange {
   last: string | undefined, now: string, next: string | undefined
 }
+
 @Component({
-  selector: 'app-slider',
-  templateUrl: 'slider.template.html',
-  styleUrls: ['slider.style.css'],
+  selector: 'app-time-slider',
+  templateUrl: './time-slider.component.html',
+  styleUrls: ['./time-slider.component.scss']
 })
-export class SliderComponent implements OnInit, OnChanges {
+export class TimeSliderComponent implements OnInit, OnChanges {
+
   @Input('dates') dates: string[];
   @Output('dateChange') change: EventEmitter<IdateChange> = new EventEmitter();
 
@@ -108,3 +110,4 @@ export class SliderComponent implements OnInit, OnChanges {
   }
 
 }
+

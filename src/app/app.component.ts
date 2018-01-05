@@ -1,13 +1,11 @@
 import { Component, OnInit, AfterViewInit, ViewEncapsulation } from '@angular/core';
 import * as ol from 'openlayers';
-import { MapstateService } from './mapstate.service';
-import { BehaviorSubject } from 'rxjs'
-import { IdateChange } from './slider/slider.component';
+import { IdateChange } from './time-slider/time-slider.component';
 
 @Component({
   selector: 'app-root',
-  templateUrl: 'app.template.html',
-  styleUrls: ['app.style.css'],
+  templateUrl: 'app.component.html',
+  styleUrls: ['app.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements AfterViewInit {
@@ -26,8 +24,7 @@ export class AppComponent implements AfterViewInit {
   legendurl: any;
   animationId: any;
 
-  constructor(private mapSvc: MapstateService) {
-    console.log(mapSvc)
+  constructor() {
     this.wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
 
     //this.datesString = [];
@@ -35,10 +32,6 @@ export class AppComponent implements AfterViewInit {
   }
 
   ngOnInit() {
-    this.mapSvc.getState().subscribe((state) => {
-      this.mapState = state;
-    })
-
     this.legendurl = this.getLegendForWms();
   }
 
@@ -89,34 +82,11 @@ export class AppComponent implements AfterViewInit {
       let zoom = view.getZoom();
       let center = view.getCenter();
       //console.log(center, zoom)
-
-      this.mapSvc.setState({ center: center, zoom: zoom })
     })
 
     this.getWmsCaps();
   }
 
-  /** [x:number, y:number] */
-  setCenter(center: [number, number]) {
-    this.map.getView().setCenter(center)
-  }
-
-
-  setZoom(evt) {
-    //console.log(evt)
-    var view = this.map.getView();
-    this.mapSvc.setState({ center: view.getCenter(), zoom: evt })
-  }
-
-  zoom(value: '-' | '+') {
-    let zoomControll: any = new ol.control.Zoom();
-    zoomControll.getMap = () => { return this.map }
-    //this.map.addControl(zoomControll)
-    let delta = (value == '-') ? -1 : 1;
-    zoomControll.zoomByDelta_(delta);
-    var view = this.map.getView();
-    this.mapSvc.setState({ center: view.getCenter(), zoom: view.getZoom() })
-  }
 
   getLegendForWms() {
     var value: any = false;
@@ -173,7 +143,7 @@ export class AppComponent implements AfterViewInit {
 
     //fix: ExpressionChangedAfterItHasBeenCheckedError
     //setTimeout(() => {
-    //this.legendurl = this.getLegendForWms()
+    this.legendurl = this.getLegendForWms()
     //})
   }
 
@@ -269,3 +239,4 @@ export class AppComponent implements AfterViewInit {
 
 
 }
+
