@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, ViewEncapsulation } from '@angular/core';
 import * as ol from 'openlayers';
 import { IdateChange } from './time-slider/time-slider.component';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +16,8 @@ export class AppComponent implements AfterViewInit {
 
   mapState: { center: [number, number], zoom: number };
   wmsurl: string;
+  radarlayers: any;
+  radarlayername:FormControl;
   timeSource: ol.source.TileWMS;
   preloadSource: ol.source.TileWMS;
 
@@ -22,23 +25,39 @@ export class AppComponent implements AfterViewInit {
   slidervalue: string;
 
   legendurl: any;
-  isLoading: boolean;
+  progressBarMode: 'indeterminate' | '' = 'indeterminate';
   legend: boolean;
 
   constructor() {
+    this.radarlayers =  [
+      {value: 'FX-Produkt', viewValue: 'FX Produkt'},
+      {value: 'RX-Produkt', viewValue: 'RX Produkt'},
+      {value: 'SF-Produkt', viewValue: 'SF Produkt'},
+      {value: 'SF-Produkt_(0-24)', viewValue: 'SF Produkt 0-24'}
+    ];
+
+    this.radarlayername = new FormControl(this.radarlayers[0].value);
     this.wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
-    this.isLoading = true;
     this.legend = false;
+    this.legendurl = '';
     //this.datesString = [];
 
   }
 
   ngOnInit() {
-    this.legendurl = this.getLegendForWms();
+    
   }
 
-  showLegend(){
+  refresh() {
+    this.afterInit();
+  }
+
+  showLegend() {
     this.legend = !this.legend;
+  }
+
+  produktChange(value){
+    this.refresh();
   }
 
   ngAfterViewInit() {
@@ -60,7 +79,6 @@ export class AppComponent implements AfterViewInit {
       preload: Infinity,
       source: new ol.source.OSM()
     })
-
     /*
         var baselayer = new ol.layer.Tile({
           source: new ol.source.TileWMS({
@@ -74,10 +92,25 @@ export class AppComponent implements AfterViewInit {
         })
     */
 
+
+    var baselayers = new ol.layer.Group(<any>{
+      name: 'baselayers',
+      layers: [baselayer]
+    })
+
+    var overlays = new ol.layer.Group(<any>{
+      name: 'overlays'
+    })
+
+
+
+
+
     this.map = new ol.Map({
       view: this.view,
       layers: [
-        baselayer
+        baselayers,
+        overlays
       ],
       controls: [],
       target: 'map'
@@ -90,16 +123,14 @@ export class AppComponent implements AfterViewInit {
       //console.log(center, zoom)
     })
 
-    this.getWmsCaps();
+    this.afterInit();
   }
 
-
-  getLegendForWms() {
-    var value: any = false;
-    if (this.timeSource && this.timeSource.getUrls) {
-      value = `${this.timeSource.getUrls()[0]}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${this.timeSource.getParams()['LAYERS']}`
-    }
-    return value;
+  afterInit() {
+    this.progressBarMode = 'indeterminate';
+    var overlays = this.getOverlays();
+    overlays.getLayers().clear();
+    this.getWmsCaps();
   }
 
 
@@ -129,7 +160,6 @@ export class AppComponent implements AfterViewInit {
     }).then((text) => {
       var result: any = parser.read(text);
       this.findLayerInCaps(result, 'dwd:FX-Produkt');
-      this.isLoading = false;
     });
   }
 
@@ -139,7 +169,8 @@ export class AppComponent implements AfterViewInit {
     var AllLayer = Capability.Layer
     console.log(AllLayer)
     //-----------------------------------
-    var RadarLayer = this.findLayerRecursive(AllLayer, 'Fachlayer.Wetter.Radar.FX-Produkt');
+    //this.radarlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
+    var RadarLayer = this.findLayerRecursive(AllLayer, `Fachlayer.Wetter.Radar.${this.radarlayername.value}`);
     console.log(RadarLayer);
     this.datesString = RadarLayer.Dimension[0].values.split(',');
     console.log(this.datesString)
@@ -149,8 +180,10 @@ export class AppComponent implements AfterViewInit {
 
     //fix: ExpressionChangedAfterItHasBeenCheckedError
     //setTimeout(() => {
-    this.legendurl = this.getLegendForWms()
+    this.legendurl = RadarLayer.Style[0].LegendURL[0].OnlineResource
     //})
+
+    this.progressBarMode = '';
   }
 
   addLayer(Layer, times: string[]) {
@@ -219,8 +252,19 @@ export class AppComponent implements AfterViewInit {
     })
     prelayer.setOpacity(0);
 
-    this.map.addLayer(layer);
-    this.map.addLayer(prelayer);
+    var overlays = this.getOverlays();
+    overlays.getLayers().push(layer)
+    overlays.getLayers().push(prelayer)
+  }
+
+  getOverlays() {
+    var layer: ol.layer.Group;
+    this.map.getLayers().forEach((_layer: ol.layer.Group) => {
+      if (_layer.get('name') == 'overlays') {
+        layer = _layer;
+      }
+    })
+    return layer;
   }
 
   //Fachlayer.Wetter.Radar.FX-Produkt

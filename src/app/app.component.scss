@@ -16,6 +16,10 @@ header{
   }
   .title{
     margin-left: 1em;
+    a{
+      color: inherit;
+      text-decoration: none;
+    }
   }
 
   .fill-space {
@@ -25,6 +29,7 @@ header{
   }
 
   nav{
+    cursor: pointer;
     float: right;
   }
 }

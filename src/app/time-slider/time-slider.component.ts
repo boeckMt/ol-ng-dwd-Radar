@@ -55,8 +55,13 @@ export class TimeSliderComponent implements OnInit, OnChanges {
 
 
       var dateIndex = this.findClosestDate(this.dates).dateBefore;
-      this.d_value = this.dates[dateIndex];
-      this.s_value = dateIndex;
+      if (dateIndex) {
+        this.d_value = this.dates[dateIndex];
+        this.s_value = dateIndex;
+      } else {
+        this.d_value = this.dates[0];
+        this.s_value = 0;
+      }
 
       this.sliderOnChange();
       //console.log(date)
@@ -102,7 +107,12 @@ export class TimeSliderComponent implements OnInit, OnChanges {
 
     //console.log(_dates.join(','))
     //return { dateBefore: _dates[before[0].index], testDate: testDate.toISOString(), dateAfter: _dates[after[0].index] };
-    return { dateBefore: before[0].index, dateAfter: after[0].index };
+    if (before[0] && after[0]) {
+      return { dateBefore: before[0].index, dateAfter: after[0].index };
+    } else {
+      return { dateBefore: false, dateAfter: false };
+    }
+
   }
 
   ngOnInit() {

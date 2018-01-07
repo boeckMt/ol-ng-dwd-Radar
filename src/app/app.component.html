@@ -1,19 +1,32 @@
 <header>
   <mat-toolbar>
-    <span>DWD Radar</span>
+    <mat-icon (click)="refresh()">refresh</mat-icon>
+    <span class="title">
+      <a href="https://www.dwd.de/DE/wetter/warnungen_aktuell/objekt_einbindung/einbindung_karten_geowebservice.html" target="_blank">
+        DWD Radar
+      </a>
+    </span>
     <span class="fill-space"></span>
     <nav>
       <mat-icon (click)="showLegend()">{{(legend)?'close':'menu'}}</mat-icon>
     </nav>
   </mat-toolbar>
-  <mat-progress-bar mode="{{(isLoading)?'indeterminate':''}}"></mat-progress-bar>
+  <mat-progress-bar mode="{{progressBarMode}}"></mat-progress-bar>
 </header>
 <main>
   <div id="map" class="map"></div>
   <aside *ngIf="legend">
-    <span *ngIf="legendurl">
+    <mat-form-field>
+      <mat-select (selectionChange)="produktChange($event)" placeholder="Set Produkt" [formControl]="radarlayername">
+        <mat-option *ngFor="let produkt of radarlayers" [value]="produkt.value">
+          {{ produkt.viewValue }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div *ngIf="legendurl">
       <img [src]="legendurl" alt="">
-    </span>
+    </div>
   </aside>
 </main>
 <footer>
