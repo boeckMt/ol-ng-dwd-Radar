@@ -10,14 +10,13 @@ import { FormControl } from '@angular/forms';
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements AfterViewInit {
-  title = 'app';
   map: ol.Map;
   view: ol.View;
 
   mapState: { center: [number, number], zoom: number };
   wmsurl: string;
   radarlayers: any;
-  radarlayername:FormControl;
+  radarlayername: FormControl;
   timeSource: ol.source.TileWMS;
   preloadSource: ol.source.TileWMS;
 
@@ -28,24 +27,54 @@ export class AppComponent implements AfterViewInit {
   progressBarMode: 'indeterminate' | '' = 'indeterminate';
   legend: boolean;
 
+  layertitle: string = 'DWD Radar';
+  layerdescription: string = '';
+  dwdinfo: {
+    link: string,
+    title: string
+  };
+
   constructor() {
-    this.radarlayers =  [
-      {value: 'FX-Produkt', viewValue: 'FX Produkt'},
-      {value: 'RX-Produkt', viewValue: 'RX Produkt'},
-      {value: 'SF-Produkt', viewValue: 'SF Produkt'},
-      {value: 'SF-Produkt_(0-24)', viewValue: 'SF Produkt 0-24'}
+    this.radarlayers = [
+      { value: 'FX-Produkt', viewValue: 'FX Produkt' },
+      { value: 'RX-Produkt', viewValue: 'RX Produkt' },
+      { value: 'SF-Produkt', viewValue: 'SF Produkt' },
+      { value: 'SF-Produkt_(0-24)', viewValue: 'SF Produkt 0-24' }
     ];
 
     this.radarlayername = new FormControl(this.radarlayers[0].value);
     this.wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
     this.legend = false;
     this.legendurl = '';
+    this.dwdinfo = { link: null, title: null };
     //this.datesString = [];
 
   }
 
   ngOnInit() {
-    
+
+  }
+
+  getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        if (this.checkIfLocationInGermany()) {
+          this.map.setView(new ol.View({
+            center: ol.proj.transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', 'EPSG:3857'),
+            zoom: 7
+          }));
+        }
+      });
+    }
+  }
+
+  //TODO
+  checkIfLocationInGermany() {
+    return true;
+  }
+
+  isLoading() {
+    return this.progressBarMode == 'indeterminate';
   }
 
   refresh() {
@@ -56,7 +85,7 @@ export class AppComponent implements AfterViewInit {
     this.legend = !this.legend;
   }
 
-  produktChange(value){
+  produktChange(value) {
     this.refresh();
   }
 
@@ -72,26 +101,12 @@ export class AppComponent implements AfterViewInit {
       center: [1130473.1421064818, 6644817.811938905],
       //center: ol.proj.transform([1130473.1421064818, 6644817.811938905], 'EPSG:3857', 'EPSG:4326'),
       zoom: 6,
-      //projection: "EPSG:4326" //RadolanProjection
     });
 
     var baselayer = new ol.layer.Tile({
       preload: Infinity,
       source: new ol.source.OSM()
     })
-    /*
-        var baselayer = new ol.layer.Tile({
-          source: new ol.source.TileWMS({
-            attributions: ['copyrigt DWD'],
-            url: this.wmsurl,
-            params: {
-              'LAYERS': `GRAY_HR_SR_OB_DR`,
-              'VERSION': '1.3.0',
-            }
-          })
-        })
-    */
-
 
     var baselayers = new ol.layer.Group(<any>{
       name: 'baselayers',
@@ -101,9 +116,6 @@ export class AppComponent implements AfterViewInit {
     var overlays = new ol.layer.Group(<any>{
       name: 'overlays'
     })
-
-
-
 
 
     this.map = new ol.Map({
@@ -116,12 +128,7 @@ export class AppComponent implements AfterViewInit {
       target: 'map'
     });
 
-    this.map.on('moveend', (evt: ol.MapEvent) => {
-      let view = evt.map.getView();
-      let zoom = view.getZoom();
-      let center = view.getCenter();
-      //console.log(center, zoom)
-    })
+    this.getLocation();
 
     this.afterInit();
   }
@@ -167,14 +174,13 @@ export class AppComponent implements AfterViewInit {
     var Service = caps.Service
     var Capability = caps.Capability
     var AllLayer = Capability.Layer
-    console.log(AllLayer)
+    console.log(caps)
+    this.dwdinfo.title = Service.Title;
+    this.dwdinfo.link = Service.AccessConstraints;
     //-----------------------------------
     //this.radarlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
     var RadarLayer = this.findLayerRecursive(AllLayer, `Fachlayer.Wetter.Radar.${this.radarlayername.value}`);
-    console.log(RadarLayer);
     this.datesString = RadarLayer.Dimension[0].values.split(',');
-    console.log(this.datesString)
-
     this.addLayer(RadarLayer, this.datesString);
 
 
@@ -187,6 +193,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   addLayer(Layer, times: string[]) {
+    console.log(Layer)
     this.timeSource = new ol.source.TileWMS({
       attributions: ['copyrigt DWD'],
       url: this.wmsurl,
@@ -196,12 +203,6 @@ export class AppComponent implements AfterViewInit {
         'CRS': this.view.getProjection(),//Layer.CRS[0]
         'TIME': times[0]
       }
-      /**
-      * FX-Produkt
-      * 2 stündige Radarvorhersage auf Basis des RX-Produktes - experimenteller Status (Dez 2014)
-      * <Dimension name="time" default="current" units="ISO8601">2018-01-02T14:05:00.000Z,2018-01-02T14:10:00.000Z,2018-01-02T14:15:00.000Z,...</Dimension>
-      */
-
     })
     /*
         this.timeSource.on('tileloadstart', function() {
@@ -244,6 +245,11 @@ export class AppComponent implements AfterViewInit {
       //extent: extent,
       source: this.timeSource
     })
+
+    //layer.set('title',Layer.Title);
+    this.layertitle = Layer.Title;
+    //layer.set('description',Layer.Abstract) 
+    this.layerdescription = Layer.Abstract;
     layer.setOpacity(0.7);
 
     var prelayer = new ol.layer.Tile({

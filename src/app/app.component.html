@@ -1,32 +1,51 @@
+<!-- https://material.io/icons/ -->
+<mat-progress-bar *ngIf="isLoading()" mode="{{progressBarMode}}"></mat-progress-bar>
 <header>
   <mat-toolbar>
     <mat-icon (click)="refresh()">refresh</mat-icon>
     <span class="title">
-      <a href="https://www.dwd.de/DE/wetter/warnungen_aktuell/objekt_einbindung/einbindung_karten_geowebservice.html" target="_blank">
-        DWD Radar
-      </a>
+      {{layertitle}}
     </span>
     <span class="fill-space"></span>
     <nav>
-      <mat-icon (click)="showLegend()">{{(legend)?'close':'menu'}}</mat-icon>
+      <mat-icon (click)="showLegend()">{{(legend)?'close':'more_vert'}}</mat-icon>
     </nav>
   </mat-toolbar>
-  <mat-progress-bar mode="{{progressBarMode}}"></mat-progress-bar>
 </header>
 <main>
   <div id="map" class="map"></div>
   <aside *ngIf="legend">
-    <mat-form-field>
-      <mat-select (selectionChange)="produktChange($event)" placeholder="Set Produkt" [formControl]="radarlayername">
-        <mat-option *ngFor="let produkt of radarlayers" [value]="produkt.value">
-          {{ produkt.viewValue }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+    <mat-card class="example-card">
+      <mat-card-header>
+        <mat-form-field>
+          <mat-select (selectionChange)="produktChange($event)" placeholder="Set Produkt" [formControl]="radarlayername">
+            <mat-option *ngFor="let produkt of radarlayers" [value]="produkt.value">
+              {{ produkt.viewValue }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <!--       
+        <div mat-card-avatar class="example-header-image"></div>
+        <mat-card-title>{{layerdescription}}</mat-card-title>
+        <mat-card-subtitle></mat-card-subtitle> -->
+      </mat-card-header>
+      <!-- <img mat-card-image [src]="legendurl" alt="Layer Legend"> -->
 
-    <div *ngIf="legendurl">
-      <img [src]="legendurl" alt="">
-    </div>
+      <mat-card-content *ngIf="legendurl">
+        <p>
+          {{layerdescription}}
+        </p>
+        <p>
+          <img [src]="legendurl" alt="Layer Legend">
+        </p>
+      </mat-card-content>
+      <!--
+      <mat-card-actions>
+        <button mat-button>LIKE</button>
+        <button mat-button>SHARE</button>
+      </mat-card-actions>
+    -->
+    </mat-card>
   </aside>
 </main>
 <footer>
@@ -36,8 +55,13 @@
     </mat-toolbar-row>
     <mat-toolbar-row>
       <span class="title">
-        {{ slidervalue | date: 'dd/MM/yy - HH:mm:ss'}}
+        {{ slidervalue | date: 'dd/M/yyyy - HH:mm:ss'}}
       </span>
+
+      <span class="fill-space"></span>
+      <a *ngIf="dwdinfo.link" [href]="dwdinfo.link" [title]="dwdinfo.title" target="_blank">
+        <mat-icon>info_outline</mat-icon>
+      </a>
     </mat-toolbar-row>
   </mat-toolbar>
 </footer>

@@ -13,6 +13,11 @@ header{
   height: 69px;
   @media (max-width: 600px){
     height: 61px;
+    .title{
+      max-width: 75%;
+      overflow: auto;
+      text-overflow: ellipsis;
+    }
   }
   .title{
     margin-left: 1em;
@@ -47,6 +52,7 @@ main{
     overflow: auto;
     padding-left: 5px;
     right: 0px;
+    max-width: 250px;
     top:69px;
     height: calc(100% - 197px);
     @media (max-width: 600px){
