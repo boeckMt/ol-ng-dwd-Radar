@@ -7,9 +7,18 @@ app-root{
   height: 100%;
 }
 
+.mat-toolbar {
+  background: #004D40;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mat-accent .mat-slider-thumb, .mat-accent .mat-slider-thumb-label, .mat-accent .mat-slider-track-fill {
+  background-color: #EF6C00;
+}
+
 header{
   margin-bottom: 0;
-  background: #f5f5f5;
+  background: #004D40;
   height: 69px;
   @media (max-width: 600px){
     height: 61px;
@@ -47,10 +56,10 @@ main{
   width: 100%;
 
   aside{
-    background: #f5f5f5;
+    background: #004D40;
     position: absolute;
     overflow: auto;
-    padding-left: 5px;
+    padding: 0 5px;
     right: 0px;
     max-width: 250px;
     top:69px;
@@ -70,9 +79,14 @@ footer{
         height: 112px;
       }
 
+      .mat-icon {
+        color: #EF6C00;
+      }
+
       .title{
         width: 100%;
         white-space: normal;
+        text-align: center;
       }
 
       app-time-slider{

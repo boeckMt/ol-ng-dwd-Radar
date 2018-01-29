@@ -174,7 +174,7 @@ export class AppComponent implements AfterViewInit {
     var Service = caps.Service
     var Capability = caps.Capability
     var AllLayer = Capability.Layer
-    console.log(caps)
+    //console.log(caps)
     this.dwdinfo.title = Service.Title;
     this.dwdinfo.link = Service.AccessConstraints;
     //-----------------------------------
@@ -193,7 +193,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   addLayer(Layer, times: string[]) {
-    console.log(Layer)
+    //console.log(Layer)
     this.timeSource = new ol.source.TileWMS({
       attributions: ['copyrigt DWD'],
       url: this.wmsurl,
