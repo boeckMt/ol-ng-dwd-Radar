@@ -1,1 +1,45 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>DwdRadar</title><!-- <base href="/"> --><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="apple-touch-icon" href="/assets/icons/icon-72x72.png"/><link rel="icon" type="image/png" href="/assets/icons/icon-72x72.png" sizes="32x32"/><link rel="icon" type="image/png" href="/assets/icons/icon-72x72.png" sizes="16x16"/><link rel="icon" type="image/x-icon" href="favicon.ico"><link rel="shortcut icon" href="/favicon.ico"><link href="styles.969523354e51e0f22d6c.bundle.css" rel="stylesheet"/></head><body><app-root></app-root><script type="text/javascript" src="inline.881bc3092c345eebbaf2.bundle.js"></script><script type="text/javascript" src="polyfills.f20484b2fa4642e0dca8.bundle.js"></script><script type="text/javascript" src="main.bf5920bf637615a444af.bundle.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>DWD-R</title>
+    <!-- <base href="/"> -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/assets/icons/icon-72x72.png" />
+    <link rel="icon" type="image/png" href="/assets/icons/icon-72x72.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/assets/icons/icon-72x72.png" sizes="16x16" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="styles.969523354e51e0f22d6c.bundle.css" rel="stylesheet" />
+
+    <meta name="application-name" content="DWD-R" />
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="manifest.json">
+    <script>
+        // Registering ServiceWorker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(function (registration) {
+
+                // Registration was successful
+                console.log('ServiceWorker registration successful. Scope: ' + registration.scope)
+            }).catch(function (err) {
+
+                // Registration failed with error
+                console.log('ServiceWorker registration failed. Error: ' + err);
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <app-root></app-root>
+    <script type="text/javascript" src="inline.881bc3092c345eebbaf2.bundle.js"></script>
+    <script type="text/javascript" src="polyfills.f20484b2fa4642e0dca8.bundle.js"></script>
+    <script type="text/javascript" src="main.bf5920bf637615a444af.bundle.js"></script>
+</body>
+
+</html>
