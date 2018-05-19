@@ -5,7 +5,7 @@
     </mat-icon>
   </button>
 
-  <mat-slider [tick-interval]="1" [(ngModel)]="s_value" (change)="sliderOnChange($event)" min="{{s_min}}" max="{{s_max}}"
+  <mat-slider [tickInterval]="1" [(ngModel)]="s_value" (change)="sliderOnChange($event)" min="{{s_min}}" max="{{s_max}}"
     value="{{s_min}}" step="{{s_step}}"></mat-slider>
 
   <button (click)="setSlider('+')" class="left" mat-icon-button>
