@@ -63,10 +63,16 @@ main{
     right: 0px;
     max-width: 250px;
     top:69px;
+    &.is-loading{
+      top:calc(69px + 5px);
+    }
     height: calc(100% - 197px);
     @media (max-width: 600px){
       height: calc(100% - 173px);
       top: 61px;
+      &.is-loading{
+        top:calc(61px + 5px);
+      }
     }
   }
 }
