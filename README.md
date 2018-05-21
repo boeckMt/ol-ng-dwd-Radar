@@ -1,7 +1,7 @@
 # ol-ng-dwd-Radar
 
 [Angular](https://angular.io/) [OpenLayers](http://openlayers.org/) App which shows Radar data from [DWD](https://www.dwd.de/DE/wetter/warnungen_aktuell/objekt_einbindung/einbindung_karten_geowebservice.html)
-[PWA](https://angular.io/guide/service-worker-intro)
+[PWA](https://blog.angular-university.io/angular-service-worker/)
 
 
 ## Getting Started
