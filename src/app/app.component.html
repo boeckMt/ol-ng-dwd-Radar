@@ -18,8 +18,8 @@
     <mat-card class="example-card">
       <mat-card-header>
         <mat-form-field>
-          <mat-select (selectionChange)="produktChange($event)" placeholder="Set Produkt" [formControl]="radarlayername">
-            <mat-option *ngFor="let produkt of radarlayers" [value]="produkt.value">
+          <mat-select (selectionChange)="produktChange($event)" placeholder="Set Produkt" [formControl]="weatherlayername">
+            <mat-option *ngFor="let produkt of weatherlayers" [value]="produkt.value">
               {{ produkt.viewValue }}
             </mat-option>
           </mat-select>

@@ -2,6 +2,8 @@ import { Component, OnInit, AfterViewInit, ViewEncapsulation } from '@angular/co
 import * as ol from 'openlayers';
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
+import * as moment from 'moment';
+
 
 @Component({
   selector: 'app-root',
@@ -15,8 +17,8 @@ export class AppComponent implements AfterViewInit {
 
   mapState: { center: [number, number], zoom: number };
   wmsurl: string;
-  radarlayers: any;
-  radarlayername: FormControl;
+  weatherlayers: any[];
+  weatherlayername: FormControl;
   timeSource: ol.source.TileWMS;
   preloadSource: ol.source.TileWMS;
 
@@ -35,14 +37,17 @@ export class AppComponent implements AfterViewInit {
   };
 
   constructor() {
-    this.radarlayers = [
-      { value: 'FX-Produkt', viewValue: 'FX Produkt' },
-      { value: 'RX-Produkt', viewValue: 'RX Produkt' },
-      { value: 'SF-Produkt', viewValue: 'SF Produkt' },
-      { value: 'SF-Produkt_(0-24)', viewValue: 'SF Produkt 0-24' }
+    this.weatherlayers = [
+      { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'FX Produkt' },
+      { value: 'Fachlayer.Wetter.Radar.RX-Produkt', viewValue: 'RX Produkt' },
+      { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'SF Produkt' },
+      { value: 'Fachlayer.Wetter.Radar.SF-Produkt_(0-24)', viewValue: 'SF Produkt 0-24' },
+      { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' }
+      //{ value: 'Fachlayer.Wetter.Beobachtungen.RBSN_RR', viewValue: 'Niederschlag an RBSN Stationen' },
+      //{ value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: '2m Temperatur an RBSN Stationen' }
     ];
 
-    this.radarlayername = new FormControl(this.radarlayers[0].value);
+    this.weatherlayername = new FormControl(this.weatherlayers[0].value);
     this.wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
     this.legend = false;
     this.legendurl = '';
@@ -154,7 +159,7 @@ export class AppComponent implements AfterViewInit {
       if (value.next) {
         let preloadtime = new Date(value.next);
         //console.log(preloadtime.toISOString())
-        this.preloadSource.updateParams({ 'TIME': value.next });
+        //this.preloadSource.updateParams({ 'TIME': value.next });
       }
 
     }
@@ -166,11 +171,11 @@ export class AppComponent implements AfterViewInit {
       return response.text();
     }).then((text) => {
       var result: any = parser.read(text);
-      this.findLayerInCaps(result, 'dwd:FX-Produkt');
+      this.findLayerInCaps(result);
     });
   }
 
-  findLayerInCaps(caps: any, layername) {
+  findLayerInCaps(caps: any) {
     var Service = caps.Service
     var Capability = caps.Capability
     var AllLayer = Capability.Layer
@@ -178,9 +183,13 @@ export class AppComponent implements AfterViewInit {
     this.dwdinfo.title = Service.Title;
     this.dwdinfo.link = Service.AccessConstraints;
     //-----------------------------------
-    //this.radarlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
-    var RadarLayer = this.findLayerRecursive(AllLayer, `Fachlayer.Wetter.Radar.${this.radarlayername.value}`);
-    this.datesString = RadarLayer.Dimension[0].values.split(',');
+    //this.weatherlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
+    console.log(this.weatherlayername.value);
+    var RadarLayer = this.findLayerRecursive(AllLayer, this.weatherlayername.value);
+    console.log(RadarLayer)
+    //this.checkDimensionTime(RadarLayer.Dimension[0]);
+    //this.datesString = RadarLayer.Dimension[0].values.split(',');
+    this.datesString = this.checkDimensionTime(RadarLayer.Dimension[0]);
     this.addLayer(RadarLayer, this.datesString);
 
 
@@ -190,6 +199,49 @@ export class AppComponent implements AfterViewInit {
     //})
 
     this.progressBarMode = '';
+  }
+  /**
+  * check if rage or values
+  */
+  checkDimensionTime(Dimension) {
+    if (Dimension.name == 'time') {
+      let values = Dimension.values.split(',');
+      if (values.length == 1) { //Split fails - is range
+        values = Dimension.values.split('/');
+        if (values.length == 1) { //Split fails
+          console.log('time Fotmate not known!', values);
+        } else {
+          return this.generateTimeFromRange(values);
+        }
+      } else {
+        return values;
+      }
+      console.log(values)
+    } else {
+      console.log('no time Dimension!', Dimension.name)
+    }
+  }
+
+  generateTimeFromRange(values: string[]) {
+    let start = values[0], end = values[1], duaration = values[2];
+    let _values = [];
+    _values = this.enumerateDaysBetweenDates(start, end, duaration);
+    return _values;
+  }
+
+  enumerateDaysBetweenDates(startDate, endDate, duaration) {
+    let dates = [];
+
+    let currDate = moment(startDate).startOf('day');
+    let lastDate = moment(endDate).startOf('day');
+    let period = moment.duration(duaration).asMilliseconds();
+
+    while (currDate.add(period,'ms').diff(lastDate) < 0) {
+      let formated = currDate.clone().format('YYYY-MM-DDTHH:mm:ss.SSS')+'Z';
+      dates.push(formated);
+    }
+
+    return dates;
   }
 
   addLayer(Layer, times: string[]) {
@@ -217,7 +269,7 @@ export class AppComponent implements AfterViewInit {
         });
     */
 
-
+    /*
     this.preloadSource = new ol.source.TileWMS({
       attributions: ['copyrigt DWD'],
       url: this.wmsurl,
@@ -228,6 +280,7 @@ export class AppComponent implements AfterViewInit {
         'CRS': this.view.getProjection()//Layer.CRS[0]
       }
     })
+    */
     /*
         this.preloadSource.on('tileloadstart', function() {
           console.log('pre-tileloadstart')
@@ -248,19 +301,21 @@ export class AppComponent implements AfterViewInit {
 
     //layer.set('title',Layer.Title);
     this.layertitle = Layer.Title;
-    //layer.set('description',Layer.Abstract) 
+    //layer.set('description',Layer.Abstract)
     this.layerdescription = Layer.Abstract;
     layer.setOpacity(0.7);
 
+    /*
     var prelayer = new ol.layer.Tile({
       //extent: extent,
       source: this.preloadSource
     })
     prelayer.setOpacity(0);
+    */
 
     var overlays = this.getOverlays();
     overlays.getLayers().push(layer)
-    overlays.getLayers().push(prelayer)
+    //overlays.getLayers().push(prelayer)
   }
 
   getOverlays() {
@@ -295,4 +350,3 @@ export class AppComponent implements AfterViewInit {
 
 
 }
-
