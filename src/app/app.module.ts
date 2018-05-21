@@ -7,6 +7,7 @@ import { environment } from '../environments/environment';
 import { AppComponent } from './app.component';
 import { TimeSliderComponent } from './time-slider/time-slider.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { LogUpdateService } from './log-update.service'
 
 
 @NgModule({
@@ -22,7 +23,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
     MaterialBundleModule,
     ServiceWorkerModule.register('/ngsw-worker.js', { enabled: environment.production })
   ],
-  providers: [], //services...
+  providers: [ LogUpdateService ], //services...
   bootstrap: [AppComponent]
 })
 export class AppModule { }
