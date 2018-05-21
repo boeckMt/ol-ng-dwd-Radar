@@ -21,7 +21,7 @@ import { LogUpdateService } from './log-update.service'
     ReactiveFormsModule,
     BrowserAnimationsModule,
     MaterialBundleModule,
-    ServiceWorkerModule.register('/ngsw-worker.js', { enabled: environment.production })
+    ServiceWorkerModule.register('/ol-ng-dwd-Radar/ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [ LogUpdateService ], //services...
   bootstrap: [AppComponent]
