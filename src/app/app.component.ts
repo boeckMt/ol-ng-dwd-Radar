@@ -140,6 +140,7 @@ export class AppComponent implements AfterViewInit {
 
   afterInit() {
     this.progressBarMode = 'indeterminate';
+    this.view.setRotation(0);
     var overlays = this.getOverlays();
     overlays.getLayers().clear();
     this.getWmsCaps();
