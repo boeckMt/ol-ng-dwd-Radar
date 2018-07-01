@@ -1,8 +1,9 @@
-import { Component, OnInit, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewEncapsulation, EventEmitter } from '@angular/core';
 import * as ol from 'openlayers';
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
 import * as moment from 'moment';
+import { MatSlider } from '@angular/material';
 
 
 @Component({
@@ -20,7 +21,9 @@ export class AppComponent implements AfterViewInit {
   weatherlayers: any[];
   weatherlayername: FormControl;
   timeSource: ol.source.TileWMS;
+  layer: ol.layer.Tile;
   preloadSource: ol.source.TileWMS;
+  prelayer: ol.layer.Tile;
 
   datesString: string[];
   slidervalue: string;
@@ -38,13 +41,12 @@ export class AppComponent implements AfterViewInit {
 
   constructor() {
     this.weatherlayers = [
-      { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'FX Produkt' },
-      { value: 'Fachlayer.Wetter.Radar.RX-Produkt', viewValue: 'RX Produkt' },
-      { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'SF Produkt' },
-      { value: 'Fachlayer.Wetter.Radar.SF-Produkt_(0-24)', viewValue: 'SF Produkt 0-24' },
-      { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' }
-      //{ value: 'Fachlayer.Wetter.Beobachtungen.RBSN_RR', viewValue: 'Niederschlag an RBSN Stationen' },
-      //{ value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: '2m Temperatur an RBSN Stationen' }
+      { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
+      { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
+      { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
+      { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
+
+      
     ];
 
     this.weatherlayername = new FormControl(this.weatherlayers[0].value);
@@ -180,7 +182,7 @@ export class AppComponent implements AfterViewInit {
     var Service = caps.Service
     var Capability = caps.Capability
     var AllLayer = Capability.Layer
-    //console.log(caps)
+    console.log(caps)
     this.dwdinfo.title = Service.Title;
     this.dwdinfo.link = Service.AccessConstraints;
     //-----------------------------------
@@ -231,17 +233,21 @@ export class AppComponent implements AfterViewInit {
   }
 
   enumerateDaysBetweenDates(startDate, endDate, duaration) {
+    console.log('dates: ',startDate, endDate)
     let dates = [];
 
-    let currDate = moment(startDate).startOf('day');
-    let lastDate = moment(endDate).startOf('day');
+    let currDate = moment.utc(startDate); //.startOf('day');
+    let lastDate = moment.utc(endDate); //.startOf('day');
     let period = moment.duration(duaration).asMilliseconds();
 
-    while (currDate.add(period,'ms').diff(lastDate) < 0) {
+    dates.push(currDate.format('YYYY-MM-DDTHH:mm:ss.SSS')+'Z')
+
+    while (currDate.add(period,'ms').diff(lastDate) <= 0) {
       let formated = currDate.clone().format('YYYY-MM-DDTHH:mm:ss.SSS')+'Z';
       dates.push(formated);
     }
 
+    console.log('dates', dates)
     return dates;
   }
 
@@ -295,7 +301,7 @@ export class AppComponent implements AfterViewInit {
         });
     */
 
-    var layer = new ol.layer.Tile({
+    this.layer = new ol.layer.Tile({
       //extent: extent,
       source: this.timeSource
     })
@@ -304,19 +310,27 @@ export class AppComponent implements AfterViewInit {
     this.layertitle = Layer.Title;
     //layer.set('description',Layer.Abstract)
     this.layerdescription = Layer.Abstract;
-    layer.setOpacity(0.7);
+    this.layer.setOpacity(0.7);
 
     /*
-    var prelayer = new ol.layer.Tile({
+    this.prelayer = new ol.layer.Tile({
       //extent: extent,
       source: this.preloadSource
     })
-    prelayer.setOpacity(0);
+    this.prelayer.setOpacity(0);
     */
 
     var overlays = this.getOverlays();
-    overlays.getLayers().push(layer)
-    //overlays.getLayers().push(prelayer)
+    overlays.getLayers().push(this.layer)
+    //overlays.getLayers().push(this.prelayer)
+  }
+
+  setLayerOpacity(slider:MatSlider){
+    this.layer.setOpacity(slider.value);
+  }
+
+  getLayerOpacity():number{
+    return this.layer.getOpacity();
   }
 
   getOverlays() {

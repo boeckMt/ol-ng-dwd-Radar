@@ -59,8 +59,8 @@ export class TimeSliderComponent implements OnInit, OnChanges {
         this.d_value = this.dates[dateIndex];
         this.s_value = dateIndex;
       } else {
-        this.d_value = this.dates[0];
-        this.s_value = 0;
+        this.d_value = this.dates[this.s_max];
+        this.s_value = this.s_max;
       }
 
       this.sliderOnChange();

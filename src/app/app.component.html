@@ -39,6 +39,9 @@
           <img [src]="legendurl" alt="Layer Legend">
         </p>
       </mat-card-content>
+
+      <label for="opacity-slider">Opacity:</label>
+      <mat-slider id="opacity-slider" [tickInterval]="1" (change)="setLayerOpacity($event)" min="0" max="1" [value]="getLayerOpacity()" step="0.1"></mat-slider>
       <!--
       <mat-card-actions>
         <button mat-button>LIKE</button>
