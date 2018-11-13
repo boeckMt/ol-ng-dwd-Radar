@@ -1,10 +1,18 @@
 import { Component, OnInit, AfterViewInit, ViewEncapsulation, EventEmitter } from '@angular/core';
-import * as ol from 'openlayers';
+//import * as ol from 'openlayers';
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
 import * as moment from 'moment';
 import { MatSlider } from '@angular/material';
 
+import View from 'ol/View';
+import { transform } from 'ol/proj.js';
+import Map from 'ol/Map';
+import TileLayer from 'ol/layer/Tile';
+import OSM from 'ol/source/OSM';
+import LayerGroup from 'ol/layer/Group';
+import WMSCapabilities from 'ol/format/WMSCapabilities';
+import TileWMS from 'ol/source/TileWMS';
 
 @Component({
   selector: 'app-root',
@@ -13,17 +21,17 @@ import { MatSlider } from '@angular/material';
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements AfterViewInit {
-  map: ol.Map;
-  view: ol.View;
+  map: Map;
+  view: View;
 
   mapState: { center: [number, number], zoom: number };
   wmsurl: string;
   weatherlayers: any[];
   weatherlayername: FormControl;
-  timeSource: ol.source.TileWMS;
-  layer: ol.layer.Tile;
-  preloadSource: ol.source.TileWMS;
-  prelayer: ol.layer.Tile;
+  timeSource: TileWMS;
+  layer: TileLayer;
+  preloadSource: TileWMS;
+  prelayer: TileLayer;
 
   datesString: string[];
   slidervalue: string;
@@ -66,8 +74,8 @@ export class AppComponent implements AfterViewInit {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         if (this.checkIfLocationInGermany()) {
-          this.map.setView(new ol.View({
-            center: ol.proj.transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', 'EPSG:3857'),
+          this.map.setView(new View({
+            center: transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', 'EPSG:3857'),
             zoom: 7
           }));
         }
@@ -98,34 +106,34 @@ export class AppComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     /*
-        var RadolanProjection = new ol.proj.Projection({
+        var RadolanProjection = new Projection({
           code: 'EPSG:1000001',
           units: 'm'
         });
     */
 
-    this.view = new ol.View({
+    this.view = new View({
       center: [1130473.1421064818, 6644817.811938905],
-      //center: ol.proj.transform([1130473.1421064818, 6644817.811938905], 'EPSG:3857', 'EPSG:4326'),
+      //center: transform([1130473.1421064818, 6644817.811938905], 'EPSG:3857', 'EPSG:4326'),
       zoom: 6,
     });
 
-    var baselayer = new ol.layer.Tile({
+    var baselayer = new TileLayer({
       preload: Infinity,
-      source: new ol.source.OSM()
+      source: new OSM()
     })
 
-    var baselayers = new ol.layer.Group(<any>{
+    var baselayers = new LayerGroup({
       name: 'baselayers',
       layers: [baselayer]
     })
 
-    var overlays = new ol.layer.Group(<any>{
+    var overlays = new LayerGroup({
       name: 'overlays'
     })
 
 
-    this.map = new ol.Map({
+    this.map = new Map({
       view: this.view,
       layers: [
         baselayers,
@@ -169,7 +177,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   getWmsCaps() {
-    var parser = new ol.format.WMSCapabilities();
+    var parser = new WMSCapabilities();
     fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then((response) => {
       return response.text();
     }).then((text) => {
@@ -253,7 +261,7 @@ export class AppComponent implements AfterViewInit {
 
   addLayer(Layer, times: string[]) {
     //console.log(Layer)
-    this.timeSource = new ol.source.TileWMS({
+    this.timeSource = new TileWMS({
       attributions: ['copyrigt DWD'],
       url: this.wmsurl,
       params: {
@@ -277,7 +285,7 @@ export class AppComponent implements AfterViewInit {
     */
 
     /*
-    this.preloadSource = new ol.source.TileWMS({
+    this.preloadSource = new TileWMS({
       attributions: ['copyrigt DWD'],
       url: this.wmsurl,
       params: {
@@ -301,7 +309,7 @@ export class AppComponent implements AfterViewInit {
         });
     */
 
-    this.layer = new ol.layer.Tile({
+    this.layer = new TileLayer({
       //extent: extent,
       source: this.timeSource
     })
@@ -313,7 +321,7 @@ export class AppComponent implements AfterViewInit {
     this.layer.setOpacity(0.7);
 
     /*
-    this.prelayer = new ol.layer.Tile({
+    this.prelayer = new TileLayer({
       //extent: extent,
       source: this.preloadSource
     })
@@ -334,8 +342,8 @@ export class AppComponent implements AfterViewInit {
   }
 
   getOverlays() {
-    var layer: ol.layer.Group;
-    this.map.getLayers().forEach((_layer: ol.layer.Group) => {
+    var layer: LayerGroup;
+    this.map.getLayers().forEach((_layer: LayerGroup) => {
       if (_layer.get('name') == 'overlays') {
         layer = _layer;
       }
