@@ -1,5 +1,5 @@
-import { Component, OnInit, AfterViewInit, ViewEncapsulation, EventEmitter } from '@angular/core';
-//import * as ol from 'openlayers';
+import { Component, AfterViewInit, ViewEncapsulation } from '@angular/core';
+
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
 import * as moment from 'moment';
@@ -9,7 +9,7 @@ import View from 'ol/View';
 import { transform } from 'ol/proj.js';
 import Map from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
-import OSM from 'ol/source/OSM';
+import XYZ from 'ol/source/XYZ';
 import LayerGroup from 'ol/layer/Group';
 import WMSCapabilities from 'ol/format/WMSCapabilities';
 import TileWMS from 'ol/source/TileWMS';
@@ -40,8 +40,8 @@ export class AppComponent implements AfterViewInit {
   progressBarMode: 'indeterminate' | '' = 'indeterminate';
   legend: boolean;
 
-  layertitle: string = 'DWD Radar';
-  layerdescription: string = '';
+  layertitle = 'DWD Radar';
+  layerdescription = '';
   dwdinfo: {
     link: string,
     title: string
@@ -54,7 +54,7 @@ export class AppComponent implements AfterViewInit {
       { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
       { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
 
-      
+
     ];
 
     this.weatherlayername = new FormControl(this.weatherlayers[0].value);
@@ -62,11 +62,7 @@ export class AppComponent implements AfterViewInit {
     this.legend = false;
     this.legendurl = '';
     this.dwdinfo = { link: null, title: null };
-    //this.datesString = [];
-
-  }
-
-  ngOnInit() {
+    // this.datesString = [];
 
   }
 
@@ -83,13 +79,13 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
-  //TODO
+  // TODO
   checkIfLocationInGermany() {
     return true;
   }
 
   isLoading() {
-    return this.progressBarMode == 'indeterminate';
+    return this.progressBarMode === 'indeterminate';
   }
 
   refresh() {
@@ -106,7 +102,7 @@ export class AppComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     /*
-        var RadolanProjection = new Projection({
+        let RadolanProjection = new Projection({
           code: 'EPSG:1000001',
           units: 'm'
         });
@@ -114,23 +110,26 @@ export class AppComponent implements AfterViewInit {
 
     this.view = new View({
       center: [1130473.1421064818, 6644817.811938905],
-      //center: transform([1130473.1421064818, 6644817.811938905], 'EPSG:3857', 'EPSG:4326'),
+      // center: transform([1130473.1421064818, 6644817.811938905], 'EPSG:3857', 'EPSG:4326'),
       zoom: 6,
     });
 
-    var baselayer = new TileLayer({
+    const baselayer = new TileLayer({
       preload: Infinity,
-      source: new OSM()
-    })
+      source: new XYZ({
+        // url: `https://tile.osmand.net/hd/{z}/{x}/{y}.png`
+        url: `https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png`
+      })
+    });
 
-    var baselayers = new LayerGroup({
+    const baselayers = new LayerGroup({
       name: 'baselayers',
       layers: [baselayer]
-    })
+    });
 
-    var overlays = new LayerGroup({
+    const overlays = new LayerGroup({
       name: 'overlays'
-    })
+    });
 
 
     this.map = new Map({
@@ -151,63 +150,63 @@ export class AppComponent implements AfterViewInit {
   afterInit() {
     this.progressBarMode = 'indeterminate';
     this.view.setRotation(0);
-    var overlays = this.getOverlays();
+    const overlays = this.getOverlays();
     overlays.getLayers().clear();
     this.getWmsCaps();
   }
 
 
   sliderOnChange(value: IdateChange) {
-    //console.log(value.last, value.now, value.next)
+    // console.log(value.last, value.now, value.next)
     if (this.timeSource && this.timeSource.updateParams) {
 
-      var time = new Date(value.now)
+      const time = new Date(value.now);
 
-      //console.log(time.toISOString())
+      // console.log(time.toISOString())
       this.slidervalue = time.toISOString();
       this.timeSource.updateParams({ 'TIME': value.now });
 
       if (value.next) {
-        let preloadtime = new Date(value.next);
-        //console.log(preloadtime.toISOString())
-        //this.preloadSource.updateParams({ 'TIME': value.next });
+        const preloadtime = new Date(value.next);
+        // console.log(preloadtime.toISOString())
+        // this.preloadSource.updateParams({ 'TIME': value.next });
       }
 
     }
   }
 
   getWmsCaps() {
-    var parser = new WMSCapabilities();
+    const parser = new WMSCapabilities();
     fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then((response) => {
       return response.text();
     }).then((text) => {
-      var result: any = parser.read(text);
+      const result: any = parser.read(text);
       this.findLayerInCaps(result);
     });
   }
 
   findLayerInCaps(caps: any) {
-    var Service = caps.Service
-    var Capability = caps.Capability
-    var AllLayer = Capability.Layer
-    console.log(caps)
+    const Service = caps.Service;
+    const Capability = caps.Capability;
+    const AllLayer = Capability.Layer;
+    console.log(caps);
     this.dwdinfo.title = Service.Title;
     this.dwdinfo.link = Service.AccessConstraints;
-    //-----------------------------------
-    //this.weatherlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
+    // -----------------------------------
+    // this.weatherlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
     console.log(this.weatherlayername.value);
-    var RadarLayer = this.findLayerRecursive(AllLayer, this.weatherlayername.value);
-    console.log(RadarLayer)
-    //this.checkDimensionTime(RadarLayer.Dimension[0]);
-    //this.datesString = RadarLayer.Dimension[0].values.split(',');
+    const RadarLayer = this.findLayerRecursive(AllLayer, this.weatherlayername.value);
+    console.log(RadarLayer);
+    // this.checkDimensionTime(RadarLayer.Dimension[0]);
+    // this.datesString = RadarLayer.Dimension[0].values.split(',');
     this.datesString = this.checkDimensionTime(RadarLayer.Dimension[0]);
     this.addLayer(RadarLayer, this.datesString);
 
 
-    //fix: ExpressionChangedAfterItHasBeenCheckedError
-    //setTimeout(() => {
-    this.legendurl = RadarLayer.Style[0].LegendURL[0].OnlineResource
-    //})
+    // fix: ExpressionChangedAfterItHasBeenCheckedError
+    // setTimeout(() => {
+    this.legendurl = RadarLayer.Style[0].LegendURL[0].OnlineResource;
+    // })
 
     this.progressBarMode = '';
   }
@@ -215,11 +214,11 @@ export class AppComponent implements AfterViewInit {
   * check if rage or values
   */
   checkDimensionTime(Dimension) {
-    if (Dimension.name == 'time') {
+    if (Dimension.name === 'time') {
       let values = Dimension.values.split(',');
-      if (values.length == 1) { //Split fails - is range
+      if (values.length === 1) { // Split fails - is range
         values = Dimension.values.split('/');
-        if (values.length == 1) { //Split fails
+        if (values.length === 1) { // Split fails
           console.log('time Fotmate not known!', values);
         } else {
           return this.generateTimeFromRange(values);
@@ -227,50 +226,50 @@ export class AppComponent implements AfterViewInit {
       } else {
         return values;
       }
-      console.log(values)
+      console.log(values);
     } else {
-      console.log('no time Dimension!', Dimension.name)
+      console.log('no time Dimension!', Dimension.name);
     }
   }
 
   generateTimeFromRange(values: string[]) {
-    let start = values[0], end = values[1], duaration = values[2];
+    const start = values[0], end = values[1], duaration = values[2];
     let _values = [];
     _values = this.enumerateDaysBetweenDates(start, end, duaration);
     return _values;
   }
 
   enumerateDaysBetweenDates(startDate, endDate, duaration) {
-    console.log('dates: ',startDate, endDate)
-    let dates = [];
+    console.log('dates: ', startDate, endDate);
+    const dates = [];
 
-    let currDate = moment.utc(startDate); //.startOf('day');
-    let lastDate = moment.utc(endDate); //.startOf('day');
-    let period = moment.duration(duaration).asMilliseconds();
+    const currDate = moment.utc(startDate);
+    const lastDate = moment.utc(endDate);
+    const period = moment.duration(duaration).asMilliseconds();
 
-    dates.push(currDate.format('YYYY-MM-DDTHH:mm:ss.SSS')+'Z')
+    dates.push(currDate.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z');
 
-    while (currDate.add(period,'ms').diff(lastDate) <= 0) {
-      let formated = currDate.clone().format('YYYY-MM-DDTHH:mm:ss.SSS')+'Z';
+    while (currDate.add(period, 'ms').diff(lastDate) <= 0) {
+      const formated = currDate.clone().format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z';
       dates.push(formated);
     }
 
-    console.log('dates', dates)
+    console.log('dates', dates);
     return dates;
   }
 
   addLayer(Layer, times: string[]) {
-    //console.log(Layer)
+    // console.log(Layer)
     this.timeSource = new TileWMS({
       attributions: ['copyrigt DWD'],
       url: this.wmsurl,
       params: {
         'LAYERS': `dwd:${Layer.Name}`,
         'VERSION': '1.3.0',
-        'CRS': this.view.getProjection(),//Layer.CRS[0]
+        'CRS': this.view.getProjection(), // Layer.CRS[0]
         'TIME': times[0]
       }
-    })
+    });
     /*
         this.timeSource.on('tileloadstart', function() {
           console.log('tileloadstart')
@@ -310,13 +309,13 @@ export class AppComponent implements AfterViewInit {
     */
 
     this.layer = new TileLayer({
-      //extent: extent,
+      // extent: extent,
       source: this.timeSource
-    })
+    });
 
-    //layer.set('title',Layer.Title);
+    // layer.set('title',Layer.Title);
     this.layertitle = Layer.Title;
-    //layer.set('description',Layer.Abstract)
+    // layer.set('description',Layer.Abstract)
     this.layerdescription = Layer.Abstract;
     this.layer.setOpacity(0.7);
 
@@ -328,38 +327,38 @@ export class AppComponent implements AfterViewInit {
     this.prelayer.setOpacity(0);
     */
 
-    var overlays = this.getOverlays();
-    overlays.getLayers().push(this.layer)
-    //overlays.getLayers().push(this.prelayer)
+    const overlays = this.getOverlays();
+    overlays.getLayers().push(this.layer);
+    // overlays.getLayers().push(this.prelayer)
   }
 
-  setLayerOpacity(slider:MatSlider){
+  setLayerOpacity(slider: MatSlider) {
     this.layer.setOpacity(slider.value);
   }
 
-  getLayerOpacity():number{
+  getLayerOpacity(): number {
     return this.layer.getOpacity();
   }
 
   getOverlays() {
-    var layer: LayerGroup;
+    let layer: LayerGroup;
     this.map.getLayers().forEach((_layer: LayerGroup) => {
-      if (_layer.get('name') == 'overlays') {
+      if (_layer.get('name') === 'overlays') {
         layer = _layer;
       }
-    })
+    });
     return layer;
   }
 
-  //Fachlayer.Wetter.Radar.FX-Produkt
-  findLayerRecursive(LayerGroup: any, path: string) {
-    var names: Array<string> = path.split('.')
+  // Fachlayer.Wetter.Radar.FX-Produkt
+  findLayerRecursive(lLayergroup: any, path: string) {
+    const names: Array<string> = path.split('.');
     if (names.length > 0) {
-      for (let layer of LayerGroup.Layer) {
-        if (layer.Name == names[0]) {
+      for (const layer of lLayergroup.Layer) {
+        if (layer.Name === names[0]) {
           if (layer.Layer) {
             names.shift();
-            let _path = names.join('.');
+            const _path = names.join('.');
             return this.findLayerRecursive(layer, _path);
           } else {
             return layer;
