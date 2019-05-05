@@ -27,7 +27,7 @@ import { PwaHelper } from './pwa.helper';
   styleUrls: ['app.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class AppComponent implements AfterViewInit, OnInit {
+export class AppComponent implements OnInit {
   map: Map;
   view: View;
   EPSGCODE = 'EPSG:3857';
@@ -106,10 +106,6 @@ export class AppComponent implements AfterViewInit, OnInit {
 
   ngOnInit() {
     this.initMap();
-  }
-
-  ngAfterViewInit() {
-    
   }
 
   initMap(){
@@ -194,12 +190,20 @@ export class AppComponent implements AfterViewInit, OnInit {
     } else {
       const parser = new WMSCapabilities();
       fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then((response) => {
-        return response.text();
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw new Error(`status code: ${response.status}`);
+        }
       }).then((text) => {
         this.capabilities = parser.read(text);
         this.findLayerInCaps(this.capabilities);
       }).catch((err) => {
-        this.snackbar.open(`getCaps Catch: ${err}`, 'Close');
+        const snack = this.snackbar.open(`GetCapabilities - ${err}`, 'Close');
+        const sub = snack.onAction().subscribe(() => {
+          this.progressBarMode = '';
+          sub.unsubscribe();
+      });
       });
     }
   }

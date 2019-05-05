@@ -24,6 +24,7 @@ export class TimeSliderComponent implements OnInit, OnChanges {
   d_value: string;
   playing = false;
   intervalID: any;
+  isdisabled = true;
   constructor() {
 
   }
@@ -79,6 +80,7 @@ export class TimeSliderComponent implements OnInit, OnChanges {
   ngOnChanges(changes: any) {
     // only run when property "dates" changed
     if (changes['dates'] && this.dates && this.dates.length > 0) {
+      this.isdisabled = false;
       this.s_max = this.dates.length - 1;
       this.d_value = this.dates[this.s_min];
 
@@ -93,7 +95,6 @@ export class TimeSliderComponent implements OnInit, OnChanges {
       }
 
       this.sliderOnChange();
-      // console.log(date)
     }
   }
 

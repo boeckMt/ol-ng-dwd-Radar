@@ -1,23 +1,21 @@
 <div class="slider-container">
-  <button (click)="playSlider()" class="right" mat-icon-button>
-      <mat-icon aria-label="Example icon-button with a heart icon">
+  <button (click)="playSlider()" class="right" [disabled]="isdisabled" mat-icon-button>
+      <mat-icon aria-label="play button" [ngClass]="{'disable': isdisabled }">
           {{playing ? 'pause_circle_filled' : 'play_circle_filled'}}
-      </mat-icon>
-
-      
+      </mat-icon>  
     </button>
 
-  <button (click)="setSlider('-')" class="right" mat-icon-button>
-    <mat-icon aria-label="Example icon-button with a heart icon">
+  <button (click)="setSlider('-')" class="right" [disabled]="isdisabled" mat-icon-button>
+    <mat-icon aria-label="left button" [ngClass]="{'disable': isdisabled }">
       chevron_left
     </mat-icon>
   </button>
 
   <mat-slider [tickInterval]="1" [(ngModel)]="s_value" (change)="sliderOnChange($event)" min="{{s_min}}" max="{{s_max}}"
-    value="{{s_min}}" step="{{s_step}}"></mat-slider>
+    value="{{s_min}}" step="{{s_step}}" [disabled]="isdisabled"></mat-slider>
 
-  <button (click)="setSlider('+')" class="left" mat-icon-button>
-    <mat-icon aria-label="Example icon-button with a heart icon">
+  <button (click)="setSlider('+')" class="left" [disabled]="isdisabled" mat-icon-button>
+    <mat-icon aria-label="right button" [ngClass]="{'disable': isdisabled }">
       chevron_right
     </mat-icon>
   </button>

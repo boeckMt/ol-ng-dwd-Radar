@@ -2,7 +2,7 @@
 <mat-progress-bar *ngIf="isLoading()" mode="{{progressBarMode}}"></mat-progress-bar>
 <header>
   <mat-toolbar>
-    <mat-icon (click)="refresh()">refresh</mat-icon>
+    <mat-icon (click)="refresh(true)">refresh</mat-icon>
     <span class="title">
       {{layertitle}}
     </span>

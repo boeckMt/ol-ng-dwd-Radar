@@ -20,8 +20,9 @@ export class PwaHelper {
                     // Update gets downloaded
                     // `Current version is: ${event.current} - Update Available; ${event.available}`
                     const snack = this.snackbar.open(`Update for the App Available`, 'Reload');
-                    snack.onAction().subscribe(() => {
+                    const sub = snack.onAction().subscribe(() => {
                         window.location.reload();
+                        sub.unsubscribe();
                     });
                 });
             });
