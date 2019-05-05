@@ -2,12 +2,12 @@
   "short_name": "DWR-R",
   "name": "DWD Radar",
   "description" : "Angular OpenLayers App which shows Radar data from DWD",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#000",
+  "background_color": "#000",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "index.html",
+  "start_url": "/",
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",

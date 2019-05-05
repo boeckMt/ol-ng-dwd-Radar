@@ -1,13 +1,18 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule, ReactiveFormsModule}   from '@angular/forms';
+import { FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialBundleModule } from './material-bundle/material-bundle.module';
+
 import { environment } from '../environments/environment';
 import { AppComponent } from './app.component';
 import { TimeSliderComponent } from './time-slider/time-slider.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
-import { LogUpdateService } from './log-update.service'
+
+import { MatToolbarModule, MatProgressBarModule, MatIconModule,
+  MatSliderModule, MatButtonModule, MatSelectModule, MatCardModule,
+  MatInputModule, MatFormFieldModule, MatSnackBarModule} from '@angular/material';
+
+import { PwaHelper } from './pwa.helper';
 
 
 @NgModule({
@@ -20,10 +25,11 @@ import { LogUpdateService } from './log-update.service'
     FormsModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
-    MaterialBundleModule,
-    ServiceWorkerModule.register('/ngsw-worker.js', { enabled: environment.production })
+    MatToolbarModule, MatProgressBarModule, MatIconModule, MatSliderModule,
+    MatButtonModule, MatSelectModule, MatCardModule, MatInputModule, MatFormFieldModule, MatSnackBarModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
-  providers: [ LogUpdateService ], //services...
+  providers: [PwaHelper],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

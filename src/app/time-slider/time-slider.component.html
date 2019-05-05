@@ -1,4 +1,12 @@
 <div class="slider-container">
+  <button (click)="playSlider()" class="right" mat-icon-button>
+      <mat-icon aria-label="Example icon-button with a heart icon">
+          {{playing ? 'pause_circle_filled' : 'play_circle_filled'}}
+      </mat-icon>
+
+      
+    </button>
+
   <button (click)="setSlider('-')" class="right" mat-icon-button>
     <mat-icon aria-label="Example icon-button with a heart icon">
       chevron_left

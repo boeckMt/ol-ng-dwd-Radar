@@ -1,8 +1,9 @@
 import { Component, OnInit, OnChanges } from '@angular/core';
 import { Input, Output, EventEmitter } from '@angular/core';
+import { TimeInterval } from 'rxjs';
 
 export interface IdateChange {
-  last: string | undefined, now: string, next: string | undefined
+  last: string | undefined; now: string; next: string | undefined;
 }
 
 @Component({
@@ -15,27 +16,55 @@ export class TimeSliderComponent implements OnInit, OnChanges {
   @Input('dates') dates: string[];
   @Output('dateChange') change: EventEmitter<IdateChange> = new EventEmitter();
 
-  s_value: number = 0;
-  s_min: number = 0;
+  s_value = 0;
+  s_min = 0;
   s_max: number;
-  s_step: number = 1;
+  s_step = 1;
 
   d_value: string;
+  playing = false;
+  intervalID: any;
   constructor() {
 
   }
 
   setSlider(value: '+' | '-') {
-    if (value == '+') {
+    if (value === '+') {
       this.s_value += this.s_step;
-      if (this.s_value > this.s_max)
+      if (this.s_value > this.s_max) {
         this.s_value = this.s_max;
+      }
     } else {
       this.s_value -= this.s_step;
-      if (this.s_value < this.s_min)
+      if (this.s_value < this.s_min) {
         this.s_value = this.s_min;
+      }
     }
-    this.sliderOnChange()
+    this.sliderOnChange();
+  }
+
+  playSlider() {
+    const time_step = 1400;
+    this.playing = !this.playing;
+    console.log(this.playing);
+    if (this.playing) {
+      if (this.s_value === this.s_max) {
+        this.s_value = this.s_min;
+      }
+      this.intervalID = setInterval(() => {
+        this.setSlider('+');
+        if (this.s_value === this.s_max) {
+          clearInterval(this.intervalID);
+          this.playing = false;
+          console.log(this.playing);
+        }
+      }, time_step);
+    } else {
+      console.log(this.intervalID);
+      clearInterval(this.intervalID);
+      console.log(this.playing);
+    }
+
   }
 
   sliderOnChange(value?: any) {
@@ -54,7 +83,7 @@ export class TimeSliderComponent implements OnInit, OnChanges {
       this.d_value = this.dates[this.s_min];
 
 
-      var dateIndex = this.findClosestDate(this.dates).dateBefore;
+      const dateIndex = this.findClosestDate(this.dates).dateBefore;
       if (dateIndex) {
         this.d_value = this.dates[dateIndex];
         this.s_value = dateIndex;
@@ -64,20 +93,20 @@ export class TimeSliderComponent implements OnInit, OnChanges {
       }
 
       this.sliderOnChange();
-      //console.log(date)
+      // console.log(date)
     }
   }
 
   findClosestDate(_dates: string[]) {
-    var testDate = new Date();
-    var dates = _dates.map((date) => { return new Date(date) });
-    var before = [];
-    var after = [];
-    var max = dates.length;
+    const testDate = new Date();
+    const dates = _dates.map((date) => new Date(date));
+    const before = [];
+    const after = [];
+    const max = dates.length;
 
     for (let i = 0; i < max; i++) {
-      var tar = dates[i];
-      var diff = (testDate.getTime() - tar.getTime())
+      const tar = dates[i];
+      const diff = (testDate.getTime() - tar.getTime());
       if (diff > 0) {
         before.push({ diff: diff, index: i });
       } else {
@@ -93,7 +122,7 @@ export class TimeSliderComponent implements OnInit, OnChanges {
         return 1;
       }
       return 0;
-    })
+    });
 
     after.sort((a, b) => {
       if (a.diff > b.diff) {
@@ -103,10 +132,10 @@ export class TimeSliderComponent implements OnInit, OnChanges {
         return 1;
       }
       return 0;
-    })
+    });
 
-    //console.log(_dates.join(','))
-    //return { dateBefore: _dates[before[0].index], testDate: testDate.toISOString(), dateAfter: _dates[after[0].index] };
+    // console.log(_dates.join(','))
+    // return { dateBefore: _dates[before[0].index], testDate: testDate.toISOString(), dateAfter: _dates[after[0].index] };
     if (before[0] && after[0]) {
       return { dateBefore: before[0].index, dateAfter: after[0].index };
     } else {

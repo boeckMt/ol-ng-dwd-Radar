@@ -4,6 +4,8 @@
 [PWA](https://blog.angular-university.io/angular-service-worker/)
 
 
+[demo](https://boeckmt.github.io/ol-ng-dwd-Radar/)
+
 ## Getting Started
 ```
 git clone https://github.com/boeckMt/ol-ng-dwd-Radar.git
@@ -24,6 +26,7 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app w
 Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
 
 
-## Further help
+## PWA
+- check for new version of app(service-worker) //swUpdate.available.subscribe
+- cache files of app and requested osm tiles with ngsw-config.json //with globs patern 
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).

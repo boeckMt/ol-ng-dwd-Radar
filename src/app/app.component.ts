@@ -1,9 +1,10 @@
-import { Component, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, AfterViewInit, ViewEncapsulation, OnInit } from '@angular/core';
 
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
 import * as moment from 'moment';
 import { MatSlider } from '@angular/material';
+import { MatSnackBar } from '@angular/material';
 
 import View from 'ol/View';
 import { transform } from 'ol/proj.js';
@@ -14,56 +15,58 @@ import LayerGroup from 'ol/layer/Group';
 import WMSCapabilities from 'ol/format/WMSCapabilities';
 import TileWMS from 'ol/source/TileWMS';
 
+import TileGrid from 'ol/tilegrid/TileGrid';
+import {getWidth} from 'ol/extent';
+import {get as getProjection} from 'ol/proj';
+
+import { PwaHelper } from './pwa.helper';
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, OnInit {
   map: Map;
   view: View;
+  EPSGCODE = 'EPSG:3857';
+  capabilities: {[s: string]: any};
 
   mapState: { center: [number, number], zoom: number };
-  wmsurl: string;
-  weatherlayers: any[];
-  weatherlayername: FormControl;
+  wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
+  weatherlayers = [
+    { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
+    { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
+    { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
+    { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
+  ];
+  weatherlayername = new FormControl(this.weatherlayers[0].value);
   timeSource: TileWMS;
   layer: TileLayer;
-  preloadSource: TileWMS;
-  prelayer: TileLayer;
+  /** EPSG:3857 */
+  fallbackExtent = [183082.1073087257, 5345076.652029778, 2017570.7861529556, 7786169.587345167];
+  /** Muenchen */
+  startCenter = [1288323.189210665, 6134720.493257317];
+  // preloadSource: TileWMS;
+  // prelayer: TileLayer;
 
   datesString: string[];
   slidervalue: string;
 
-  legendurl: any;
+  legendurl = '';
   progressBarMode: 'indeterminate' | '' = 'indeterminate';
-  legend: boolean;
+  legend = false;
 
   layertitle = 'DWD Radar';
   layerdescription = '';
   dwdinfo: {
     link: string,
     title: string
-  };
+  } = { link: null, title: null };
 
-  constructor() {
-    this.weatherlayers = [
-      { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
-      { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
-      { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
-      { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
-
-
-    ];
-
-    this.weatherlayername = new FormControl(this.weatherlayers[0].value);
-    this.wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
-    this.legend = false;
-    this.legendurl = '';
-    this.dwdinfo = { link: null, title: null };
-    // this.datesString = [];
-
+  constructor(private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
+    this.pwaHelper.checkUpdates();
   }
 
   getLocation() {
@@ -71,7 +74,7 @@ export class AppComponent implements AfterViewInit {
       navigator.geolocation.getCurrentPosition((position) => {
         if (this.checkIfLocationInGermany()) {
           this.map.setView(new View({
-            center: transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', 'EPSG:3857'),
+            center: transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', this.EPSGCODE),
             zoom: 7
           }));
         }
@@ -88,8 +91,8 @@ export class AppComponent implements AfterViewInit {
     return this.progressBarMode === 'indeterminate';
   }
 
-  refresh() {
-    this.afterInit();
+  refresh(loadCaps: boolean) {
+    this.afterInit(loadCaps);
   }
 
   showLegend() {
@@ -97,21 +100,22 @@ export class AppComponent implements AfterViewInit {
   }
 
   produktChange(value) {
-    this.refresh();
+    const loadCaps = false;
+    this.refresh(loadCaps);
+  }
+
+  ngOnInit() {
+    this.initMap();
   }
 
   ngAfterViewInit() {
-    /*
-        let RadolanProjection = new Projection({
-          code: 'EPSG:1000001',
-          units: 'm'
-        });
-    */
+    
+  }
 
+  initMap(){
     this.view = new View({
-      center: [1130473.1421064818, 6644817.811938905],
-      // center: transform([1130473.1421064818, 6644817.811938905], 'EPSG:3857', 'EPSG:4326'),
-      zoom: 6,
+      center: this.startCenter,
+      zoom: 9
     });
 
     const baselayer = new TileLayer({
@@ -131,9 +135,9 @@ export class AppComponent implements AfterViewInit {
       name: 'overlays'
     });
 
-
     this.map = new Map({
       view: this.view,
+      projection: this.EPSGCODE,
       layers: [
         baselayers,
         overlays
@@ -142,17 +146,26 @@ export class AppComponent implements AfterViewInit {
       target: 'map'
     });
 
-    this.getLocation();
 
-    this.afterInit();
+    this.map.on('click', (evt) => {
+      const zoom = this.map.getView().getZoom();
+      const center = this.map.getView().getCenter();
+      const extent = this.map.getView().calculateExtent(this.map.getSize());
+      console.log(zoom, center, extent);
+    });
+
+
+    // this.getLocation();
+    const loadCaps = true;
+    this.afterInit(loadCaps);
   }
 
-  afterInit() {
+  afterInit(loadCaps: boolean) {
     this.progressBarMode = 'indeterminate';
     this.view.setRotation(0);
     const overlays = this.getOverlays();
     overlays.getLayers().clear();
-    this.getWmsCaps();
+    this.getWmsCaps(loadCaps);
   }
 
 
@@ -175,28 +188,35 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
-  getWmsCaps() {
-    const parser = new WMSCapabilities();
-    fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then((response) => {
-      return response.text();
-    }).then((text) => {
-      const result: any = parser.read(text);
-      this.findLayerInCaps(result);
-    });
+  getWmsCaps(loadCaps: boolean = true) {
+    if (!loadCaps && this.capabilities) {
+      this.findLayerInCaps(this.capabilities);
+    } else {
+      const parser = new WMSCapabilities();
+      fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then((response) => {
+        return response.text();
+      }).then((text) => {
+        this.capabilities = parser.read(text);
+        this.findLayerInCaps(this.capabilities);
+      }).catch((err) => {
+        this.snackbar.open(`getCaps Catch: ${err}`, 'Close');
+      });
+    }
   }
 
   findLayerInCaps(caps: any) {
+    // this.snackbar.open(`caps loaded`, 'Close');
     const Service = caps.Service;
     const Capability = caps.Capability;
     const AllLayer = Capability.Layer;
-    console.log(caps);
+    // console.log(caps);
     this.dwdinfo.title = Service.Title;
     this.dwdinfo.link = Service.AccessConstraints;
     // -----------------------------------
     // this.weatherlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
-    console.log(this.weatherlayername.value);
+    // console.log(this.weatherlayername.value);
     const RadarLayer = this.findLayerRecursive(AllLayer, this.weatherlayername.value);
-    console.log(RadarLayer);
+    // console.log(RadarLayer);
     // this.checkDimensionTime(RadarLayer.Dimension[0]);
     // this.datesString = RadarLayer.Dimension[0].values.split(',');
     this.datesString = this.checkDimensionTime(RadarLayer.Dimension[0]);
@@ -258,8 +278,27 @@ export class AppComponent implements AfterViewInit {
     return dates;
   }
 
+  getTileGrid(extent) {
+    const projExtent = getProjection(this.EPSGCODE).getExtent();
+      const startResolution = getWidth(projExtent) / 256;
+      const resolutions = new Array(22);
+      for (let i = 0, ii = resolutions.length; i < ii; ++i) {
+        resolutions[i] = startResolution / Math.pow(2, i);
+      }
+      return new TileGrid({
+        extent: extent,
+        resolutions: resolutions,
+        tileSize: [512, 256]
+      });
+  }
+
   addLayer(Layer, times: string[]) {
-    // console.log(Layer)
+    let layersextent = Layer.BoundingBox.filter(item => item.crs === this.EPSGCODE);
+    if (!layersextent.length) {
+      layersextent = this.fallbackExtent;
+    } else {
+      layersextent = layersextent[0].extent;
+    }
     this.timeSource = new TileWMS({
       attributions: ['copyrigt DWD'],
       url: this.wmsurl,
@@ -267,8 +306,11 @@ export class AppComponent implements AfterViewInit {
         'LAYERS': `dwd:${Layer.Name}`,
         'VERSION': '1.3.0',
         'CRS': this.view.getProjection(), // Layer.CRS[0]
-        'TIME': times[0]
-      }
+        'TIME': times[0],
+        'TILED': true
+      },
+      serverType: 'geoserver',
+      tileGrid: this.getTileGrid(layersextent)
     });
     /*
         this.timeSource.on('tileloadstart', function() {
@@ -309,7 +351,7 @@ export class AppComponent implements AfterViewInit {
     */
 
     this.layer = new TileLayer({
-      // extent: extent,
+      extent: layersextent,
       source: this.timeSource
     });
 

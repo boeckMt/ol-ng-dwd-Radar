@@ -7,6 +7,8 @@
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
+      "prefix": "app",
+      "schematics": {},
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
@@ -14,20 +16,27 @@
             "outputPath": "docs",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "tsConfig": "src/tsconfig.app.json",
             "polyfills": "src/polyfills.ts",
+            "tsConfig": "src/tsconfig.app.json",
             "assets": [
-              "src/assets",
               "src/favicon.ico",
+              "src/assets",
               "src/manifest.json"
             ],
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "es5BrowserSupport": true
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
@@ -37,13 +46,15 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
-              "fileReplacements": [
+              "budgets": [
                 {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
                 }
               ],
-              "serviceWorker": true
+              "serviceWorker": true,
+              "ngswConfigPath": "src/ngsw-config.json"
             }
           }
         },
@@ -68,17 +79,16 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "karmaConfig": "./karma.conf.js",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
-            "scripts": [],
+            "karmaConfig": "src/karma.conf.js",
             "styles": [
               "src/styles.scss"
             ],
+            "scripts": [],
             "assets": [
-              "src/assets",
               "src/favicon.ico",
-              "src/manifest.json",
+              "src/assets",
               "src/manifest.json"
             ]
           }
@@ -98,23 +108,26 @@
       }
     },
     "dwd-radar-e2e": {
-      "root": "",
-      "sourceRoot": "",
+      "root": "e2e/",
       "projectType": "application",
+      "prefix": "",
       "architect": {
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
-            "protractorConfig": "./protractor.conf.js",
+            "protractorConfig": "e2e/protractor.conf.js",
             "devServerTarget": "dwd-radar:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "dwd-radar:serve:production"
+            }
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": [
-              "e2e/tsconfig.e2e.json"
-            ],
+            "tsConfig": "e2e/tsconfig.e2e.json",
             "exclude": [
               "**/node_modules/**"
             ]
@@ -123,31 +136,5 @@
       }
     }
   },
-  "defaultProject": "dwd-radar",
-  "schematics": {
-    "@schematics/angular:class": {
-      "spec": false
-    },
-    "@schematics/angular:component": {
-      "spec": false,
-      "prefix": "app",
-      "styleext": "scss"
-    },
-    "@schematics/angular:directive": {
-      "spec": false,
-      "prefix": "app"
-    },
-    "@schematics/angular:guard": {
-      "spec": false
-    },
-    "@schematics/angular:module": {
-      "spec": false
-    },
-    "@schematics/angular:pipe": {
-      "spec": false
-    },
-    "@schematics/angular:service": {
-      "spec": false
-    }
-  }
+  "defaultProject": "dwd-radar"
 }
