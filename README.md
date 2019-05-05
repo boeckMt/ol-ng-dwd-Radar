@@ -23,7 +23,12 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app w
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
+Run `ng build` to build the project. The build artifacts will be stored in the `docs/` directory. Use the `-prod` flag for a production build.
+
+## Add to Github Pages
+Run `npm run buildGP`
+https://github.com/angular/angular-cli/wiki/stories-github-pages
+https://github.com/angular/angular-cli/issues/9395
 
 
 ## PWA
