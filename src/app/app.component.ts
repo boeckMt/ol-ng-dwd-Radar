@@ -11,7 +11,6 @@ import Map from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
 import XYZ from 'ol/source/XYZ';
 import LayerGroup from 'ol/layer/Group';
-import WMSCapabilities from 'ol/format/WMSCapabilities';
 import TileWMS from 'ol/source/TileWMS';
 
 import TileGrid from 'ol/tilegrid/TileGrid';
@@ -20,6 +19,7 @@ import { get as getProjection } from 'ol/proj';
 
 import { PwaHelper } from './pwa.helper';
 import { DateTime, Duration } from 'luxon';
+import { WMSCapabilities } from 'ol/format';
 
 @Component({
   selector: 'app-root',
@@ -111,7 +111,8 @@ export class AppComponent implements OnInit {
   initMap() {
     this.view = new View({
       center: this.startCenter,
-      zoom: 9
+      zoom: 9,
+      projection: this.EPSGCODE
     });
 
     const baselayer = new TileLayer({
@@ -123,17 +124,15 @@ export class AppComponent implements OnInit {
     });
 
     const baselayers = new LayerGroup({
-      name: 'baselayers',
       layers: [baselayer]
     });
+    baselayers.set('name', 'baselayers');
 
-    const overlays = new LayerGroup({
-      name: 'overlays'
-    });
+    const overlays = new LayerGroup();
+    overlays.set('name', 'overlays');
 
     this.map = new Map({
       view: this.view,
-      projection: this.EPSGCODE,
       layers: [
         baselayers,
         overlays
@@ -164,27 +163,7 @@ export class AppComponent implements OnInit {
     this.getWmsCaps(loadCaps);
   }
 
-
-  sliderOnChange(value: IdateChange) {
-    // console.log(value.last, value.now, value.next)
-    if (this.timeSource && this.timeSource.updateParams) {
-
-      const time = new Date(value.now);
-
-      // console.log(time.toISOString())
-      this.slidervalue = time.toISOString();
-      this.timeSource.updateParams({ 'TIME': value.now });
-
-      if (value.next) {
-        const preloadtime = new Date(value.next);
-        // console.log(preloadtime.toISOString())
-        // this.preloadSource.updateParams({ 'TIME': value.next });
-      }
-
-    }
-  }
-
-  getWmsCaps(loadCaps: boolean = true) {
+  getWmsCaps(loadCaps: boolean = true){
     if (!loadCaps && this.capabilities) {
       this.findLayerInCaps(this.capabilities);
     } else {
@@ -206,7 +185,28 @@ export class AppComponent implements OnInit {
         });
       });
     }
+  };
+
+
+  sliderOnChange(value: IdateChange) {
+    // console.log(value.last, value.now, value.next)
+    if (this.timeSource && this.timeSource.updateParams) {
+
+      const time = new Date(value.now);
+
+      // console.log(time.toISOString())
+      this.slidervalue = time.toISOString();
+      this.timeSource.updateParams({ 'TIME': value.now });
+
+      if (value.next) {
+        const preloadtime = new Date(value.next);
+        // console.log(preloadtime.toISOString())
+        // this.preloadSource.updateParams({ 'TIME': value.next });
+      }
+
+    }
   }
+
 
   findLayerInCaps(caps: any) {
     // this.snackbar.open(`caps loaded`, 'Close');
