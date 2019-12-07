@@ -1,8 +1,7 @@
-import { Component, AfterViewInit, ViewEncapsulation, OnInit } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
-import * as moment from 'moment';
 import { MatSlider } from '@angular/material/slider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -16,10 +15,11 @@ import WMSCapabilities from 'ol/format/WMSCapabilities';
 import TileWMS from 'ol/source/TileWMS';
 
 import TileGrid from 'ol/tilegrid/TileGrid';
-import {getWidth} from 'ol/extent';
-import {get as getProjection} from 'ol/proj';
+import { getWidth } from 'ol/extent';
+import { get as getProjection } from 'ol/proj';
 
 import { PwaHelper } from './pwa.helper';
+import { DateTime, Duration } from 'luxon';
 
 @Component({
   selector: 'app-root',
@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   map: Map;
   view: View;
   EPSGCODE = 'EPSG:3857';
-  capabilities: {[s: string]: any};
+  capabilities: { [s: string]: any };
 
   mapState: { center: [number, number], zoom: number };
   wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
@@ -108,7 +108,7 @@ export class AppComponent implements OnInit {
     this.initMap();
   }
 
-  initMap(){
+  initMap() {
     this.view = new View({
       center: this.startCenter,
       zoom: 9
@@ -203,7 +203,7 @@ export class AppComponent implements OnInit {
         const sub = snack.onAction().subscribe(() => {
           this.progressBarMode = '';
           sub.unsubscribe();
-      });
+        });
       });
     }
   }
@@ -238,6 +238,7 @@ export class AppComponent implements OnInit {
   * check if rage or values
   */
   checkDimensionTime(Dimension) {
+    console.log(Dimension);
     if (Dimension.name === 'time') {
       let values = Dimension.values.split(',');
       if (values.length === 1) { // Split fails - is range
@@ -263,37 +264,39 @@ export class AppComponent implements OnInit {
     return _values;
   }
 
-  enumerateDaysBetweenDates(startDate, endDate, duaration) {
+  enumerateDaysBetweenDates(startDate: string, endDate: string, duaration: string) {
     console.log('dates: ', startDate, endDate);
     const dates = [];
 
-    const currDate = moment.utc(startDate);
-    const lastDate = moment.utc(endDate);
-    const period = moment.duration(duaration).asMilliseconds();
+    const currDate = DateTime.fromISO(startDate).toUTC();
+    const lastDate = DateTime.fromISO(endDate).toUTC();
+    const period = Duration.fromISO(duaration);
 
-    dates.push(currDate.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z');
+    const _formatedDate = currDate.toISO(); // .toFormat('yyyy-MM-dd HH:mm:ss.SSS').replace(' ', 'T') + 'Z';
+    dates.push(_formatedDate);
 
-    while (currDate.add(period, 'ms').diff(lastDate) <= 0) {
-      const formated = currDate.clone().format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z';
+    let nextDate = currDate.plus(period);
+    while (nextDate.diff(lastDate).milliseconds <= 0) {
+      const formated = nextDate.toISO(); // .toFormat('yyyy-MM-dd HH:mm:ss.SSS').replace(' ', 'T') + 'Z';
       dates.push(formated);
+      nextDate = nextDate.plus(period);
     }
-
-    console.log('dates', dates);
+    // console.log('dates', dates);
     return dates;
   }
 
   getTileGrid(extent) {
     const projExtent = getProjection(this.EPSGCODE).getExtent();
-      const startResolution = getWidth(projExtent) / 256;
-      const resolutions = new Array(22);
-      for (let i = 0, ii = resolutions.length; i < ii; ++i) {
-        resolutions[i] = startResolution / Math.pow(2, i);
-      }
-      return new TileGrid({
-        extent: extent,
-        resolutions: resolutions,
-        tileSize: [512, 256]
-      });
+    const startResolution = getWidth(projExtent) / 256;
+    const resolutions = new Array(22);
+    for (let i = 0, ii = resolutions.length; i < ii; ++i) {
+      resolutions[i] = startResolution / Math.pow(2, i);
+    }
+    return new TileGrid({
+      extent: extent,
+      resolutions: resolutions,
+      tileSize: [512, 256]
+    });
   }
 
   addLayer(Layer, times: string[]) {
@@ -383,6 +386,9 @@ export class AppComponent implements OnInit {
   }
 
   getLayerOpacity(): number {
+    if (!this.layer) {
+      return 0;
+    }
     return this.layer.getOpacity();
   }
 
