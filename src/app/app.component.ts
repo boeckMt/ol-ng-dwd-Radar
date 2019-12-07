@@ -3,8 +3,8 @@ import { Component, AfterViewInit, ViewEncapsulation, OnInit } from '@angular/co
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
 import * as moment from 'moment';
-import { MatSlider } from '@angular/material';
-import { MatSnackBar } from '@angular/material';
+import { MatSlider } from '@angular/material/slider';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import View from 'ol/View';
 import { transform } from 'ol/proj.js';
