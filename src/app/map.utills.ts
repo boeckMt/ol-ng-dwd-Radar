@@ -41,15 +41,20 @@ export function getTileGrid(extent, EPSG) {
     });
 }
 
-export function getLocation(map: Map) {
+export function getLocation(map: Map, EPSGCODE) {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
-            if (this.checkIfLocationInGermany()) {
+            if (checkIfLocationInGermany()) {
                 map.setView(new View({
-                    center: transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', this.EPSGCODE),
+                    center: transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', EPSGCODE),
                     zoom: 7
                 }));
             }
         });
     }
+}
+
+// TODO
+export function checkIfLocationInGermany(){
+    return true;
 }

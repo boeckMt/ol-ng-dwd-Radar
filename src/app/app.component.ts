@@ -19,6 +19,7 @@ import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime } from './utills';
 import { findLayerRecursive, getTileGrid } from './map.utills';
+import { resolve } from 'url';
 
 
 export interface IProgress {
@@ -87,9 +88,9 @@ export class AppComponent implements OnInit {
 
   public refresh() {
     this.afterInit().then((caps) => {
-      if (caps) {
+      if (caps && 'version' in caps) {
         this.capabilities = caps;
-        // console.log(caps)
+        console.log(caps)
         this.findLayerInCaps(this.capabilities);
       }
     });
@@ -180,9 +181,9 @@ export class AppComponent implements OnInit {
 
 
     this.afterInit().then((caps) => {
-      if (caps) {
+      if (caps && 'version' in caps) {
         this.capabilities = caps;
-        // console.log(caps)
+        console.log(caps)
         this.findLayerInCaps(this.capabilities);
       }
     });
@@ -209,11 +210,13 @@ export class AppComponent implements OnInit {
     const cpasLoadTime = window.localStorage.getItem('cpasLoadTime');
     if (!checkIf5MinutesLater(DateTime.fromISO(cpasLoadTime)) && this.capabilities) {
       this.progressBar.color = 'accent';
-      // console.log('cache caps');
-      setTimeout(() => {
-        this.progressBar.mode = null;
-        return Promise.resolve(this.capabilities);
-      }, 500);
+      // console.log('cache caps', this.capabilities);
+      return new Promise<Icapabilities>((resolve, reject) => {
+        setTimeout(() => {
+          this.progressBar.mode = null;
+          resolve(this.capabilities);
+        }, 500);
+      });
     } else {
       this.progressBar.color = 'primary';
       const parser = new WMSCapabilities();
