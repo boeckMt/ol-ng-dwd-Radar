@@ -20,6 +20,9 @@ import { get as getProjection } from 'ol/proj';
 import { PwaHelper } from './pwa.helper';
 import { DateTime, Duration } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
+import { Icapabilities } from './utills';
+import { min } from 'moment';
+
 
 @Component({
   selector: 'app-root',
@@ -31,7 +34,7 @@ export class AppComponent implements OnInit {
   map: Map;
   view: View;
   EPSGCODE = 'EPSG:3857';
-  capabilities: { [s: string]: any };
+  capabilities: Icapabilities;
 
   mapState: { center: [number, number], zoom: number };
   wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
@@ -91,17 +94,22 @@ export class AppComponent implements OnInit {
     return this.progressBarMode === 'indeterminate';
   }
 
-  refresh(loadCaps: boolean) {
-    this.afterInit(loadCaps);
+  refresh() {
+    this.afterInit().then((caps) => {
+      if (caps) {
+        this.capabilities = caps;
+        console.log(caps)
+        this.findLayerInCaps(this.capabilities);
+      }
+    });
   }
 
   showLegend() {
     this.legend = !this.legend;
   }
 
-  produktChange(value) {
-    const loadCaps = false;
-    this.refresh(loadCaps);
+  produktChange() {
+    this.refresh();
   }
 
   ngOnInit() {
@@ -151,41 +159,73 @@ export class AppComponent implements OnInit {
 
 
     // this.getLocation();
-    const loadCaps = true;
-    this.afterInit(loadCaps);
+
+
+    this.afterInit().then((caps) => {
+      if (caps) {
+        this.capabilities = caps;
+        console.log(caps)
+        this.findLayerInCaps(this.capabilities);
+      }
+    });
   }
 
-  afterInit(loadCaps: boolean) {
-    this.progressBarMode = 'indeterminate';
+  async afterInit() {
     this.view.setRotation(0);
     const overlays = this.getOverlays();
     overlays.getLayers().clear();
-    this.getWmsCaps(loadCaps);
+    return this.getWmsCaps().then((caps) => {
+      this.progressBarMode = null;
+      return caps;
+    }).catch((err) => {
+      this.progressBarMode = null;
+      const snack = this.snackbar.open(`GetCapabilities - ${err}`, 'Close');
+      const sub = snack.onAction().subscribe(() => {
+        sub.unsubscribe();
+      });
+      return;
+    });
   }
 
-  getWmsCaps(loadCaps: boolean = true){
-    if (!loadCaps && this.capabilities) {
-      this.findLayerInCaps(this.capabilities);
+  async getWmsCaps() {
+    this.progressBarMode = 'indeterminate';
+    const cpasLoadTime = window.localStorage.getItem('cpasLoadTime');
+    if (!this.checkIf5MinutesLater(DateTime.fromISO(cpasLoadTime)) && this.capabilities) {
+      console.log('cache caps');
+      setTimeout(() => {
+        // this.progressBarMode = null;
+      }, 1000)
+      return Promise.resolve(this.capabilities);
     } else {
       const parser = new WMSCapabilities();
-      fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then((response) => {
+      return fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then(async response => {
         if (response.ok) {
-          return response.text();
+          window.localStorage.setItem('cpasLoadTime', DateTime.local().toISO());
+          const data = await response.text();
+          console.log('fresh caps')
+          return parser.read(data) as Icapabilities;
         } else {
           throw new Error(`status code: ${response.status}`);
         }
-      }).then((text) => {
-        this.capabilities = parser.read(text);
-        this.findLayerInCaps(this.capabilities);
-      }).catch((err) => {
-        const snack = this.snackbar.open(`GetCapabilities - ${err}`, 'Close');
-        const sub = snack.onAction().subscribe(() => {
-          this.progressBarMode = '';
-          sub.unsubscribe();
-        });
       });
     }
-  };
+  }
+
+  checkIf5MinutesLater(cpasLoadTime: DateTime) {
+    if (!cpasLoadTime) {
+      return true;
+    } else {
+      const currentTime = DateTime.local();
+      console.log(cpasLoadTime.diff(currentTime).minutes)
+      // TODO if lode at 37 min then if after 40 it should also load new!
+      const is5 = (currentTime.minute % 5 === 0 && cpasLoadTime.minute !== currentTime.minute) ? true : false;
+      if (cpasLoadTime.diff(currentTime).minutes >= 5) {
+        return true;
+      } else {
+        return is5;
+      }
+    }
+  }
 
 
   sliderOnChange(value: IdateChange) {
@@ -208,7 +248,7 @@ export class AppComponent implements OnInit {
   }
 
 
-  findLayerInCaps(caps: any) {
+  findLayerInCaps(caps: Icapabilities) {
     // this.snackbar.open(`caps loaded`, 'Close');
     const Service = caps.Service;
     const Capability = caps.Capability;
@@ -231,8 +271,6 @@ export class AppComponent implements OnInit {
     // setTimeout(() => {
     this.legendurl = RadarLayer.Style[0].LegendURL[0].OnlineResource;
     // })
-
-    this.progressBarMode = '';
   }
   /**
   * check if rage or values

@@ -1,6 +1,5 @@
 import { Component, OnInit, OnChanges } from '@angular/core';
 import { Input, Output, EventEmitter } from '@angular/core';
-import { TimeInterval } from 'rxjs';
 
 export interface IdateChange {
   last: string | undefined; now: string; next: string | undefined;
@@ -13,7 +12,7 @@ export interface IdateChange {
 })
 export class TimeSliderComponent implements OnInit, OnChanges {
 
-  @Input('dates') dates: string[];
+  @Input() dates: string[];
   @Output('dateChange') change: EventEmitter<IdateChange> = new EventEmitter();
 
   s_value = 0;
