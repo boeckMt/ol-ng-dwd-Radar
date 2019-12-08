@@ -6,22 +6,25 @@ import { MatSlider } from '@angular/material/slider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import View from 'ol/View';
-import { transform } from 'ol/proj.js';
 import Map from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
 import XYZ from 'ol/source/XYZ';
 import LayerGroup from 'ol/layer/Group';
 import TileWMS from 'ol/source/TileWMS';
 
-import TileGrid from 'ol/tilegrid/TileGrid';
-import { getWidth } from 'ol/extent';
-import { get as getProjection } from 'ol/proj';
 
 import { PwaHelper } from './pwa.helper';
-import { DateTime, Duration } from 'luxon';
+import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
-import { Icapabilities } from './utills';
-import { min } from 'moment';
+import { Icapabilities } from './ogc.types';
+import { checkIf5MinutesLater, checkDimensionTime } from './utills';
+import { findLayerRecursive, getTileGrid } from './map.utills';
+
+
+export interface IProgress {
+  mode: 'indeterminate' | '';
+  color: 'primary' | 'accent';
+}
 
 
 @Component({
@@ -31,20 +34,40 @@ import { min } from 'moment';
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements OnInit {
-  map: Map;
-  view: View;
-  EPSGCODE = 'EPSG:3857';
-  capabilities: Icapabilities;
-
-  mapState: { center: [number, number], zoom: number };
-  wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
-  weatherlayers = [
+  public weatherlayers = [
     { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
     { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
   ];
-  weatherlayername = new FormControl(this.weatherlayers[0].value);
+  public weatherlayername = new FormControl(this.weatherlayers[0].value);
+
+  public datesString: string[];
+  public slidervalue: string;
+
+  public legendurl = '';
+  public progressBar: IProgress = {
+    mode: 'indeterminate',
+    color: 'primary'
+  };
+
+  public legend = false;
+
+  public layertitle = 'DWD Radar';
+  public layerdescription = '';
+  public dwdinfo: {
+    link: string,
+    title: string
+  } = { link: null, title: null };
+
+
+  map: Map;
+  view: View;
+  EPSGCODE = 'EPSG:3857';
+  capabilities: Icapabilities;
+
+  wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
+
   timeSource: TileWMS;
   layer: TileLayer;
   /** EPSG:3857 */
@@ -54,62 +77,60 @@ export class AppComponent implements OnInit {
   // preloadSource: TileWMS;
   // prelayer: TileLayer;
 
-  datesString: string[];
-  slidervalue: string;
-
-  legendurl = '';
-  progressBarMode: 'indeterminate' | '' = 'indeterminate';
-  legend = false;
-
-  layertitle = 'DWD Radar';
-  layerdescription = '';
-  dwdinfo: {
-    link: string,
-    title: string
-  } = { link: null, title: null };
-
   constructor(private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
     this.pwaHelper.checkUpdates();
   }
 
-  getLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        if (this.checkIfLocationInGermany()) {
-          this.map.setView(new View({
-            center: transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', this.EPSGCODE),
-            zoom: 7
-          }));
-        }
-      });
-    }
+  public isLoading() {
+    return this.progressBar.mode === 'indeterminate';
   }
 
-  // TODO
-  checkIfLocationInGermany() {
-    return true;
-  }
-
-  isLoading() {
-    return this.progressBarMode === 'indeterminate';
-  }
-
-  refresh() {
+  public refresh() {
     this.afterInit().then((caps) => {
       if (caps) {
         this.capabilities = caps;
-        console.log(caps)
+        // console.log(caps)
         this.findLayerInCaps(this.capabilities);
       }
     });
   }
 
-  showLegend() {
+  public showLegend() {
     this.legend = !this.legend;
   }
 
-  produktChange() {
+  public produktChange() {
     this.refresh();
+  }
+
+  public setLayerOpacity(slider: MatSlider) {
+    this.layer.setOpacity(slider.value);
+  }
+
+  public getLayerOpacity(): number {
+    if (!this.layer) {
+      return 0;
+    }
+    return this.layer.getOpacity();
+  }
+
+  public sliderOnChange(value: IdateChange) {
+    // console.log(value.last, value.now, value.next)
+    if (this.timeSource && this.timeSource.updateParams) {
+
+      const time = new Date(value.now);
+
+      // console.log(time.toISOString())
+      this.slidervalue = time.toISOString();
+      this.timeSource.updateParams({ 'TIME': value.now });
+
+      if (value.next) {
+        const preloadtime = new Date(value.next);
+        // console.log(preloadtime.toISOString())
+        // this.preloadSource.updateParams({ 'TIME': value.next });
+      }
+
+    }
   }
 
   ngOnInit() {
@@ -154,17 +175,14 @@ export class AppComponent implements OnInit {
       const zoom = this.map.getView().getZoom();
       const center = this.map.getView().getCenter();
       const extent = this.map.getView().calculateExtent(this.map.getSize());
-      console.log(zoom, center, extent);
+      // console.log(zoom, center, extent);
     });
-
-
-    // this.getLocation();
 
 
     this.afterInit().then((caps) => {
       if (caps) {
         this.capabilities = caps;
-        console.log(caps)
+        // console.log(caps)
         this.findLayerInCaps(this.capabilities);
       }
     });
@@ -175,10 +193,9 @@ export class AppComponent implements OnInit {
     const overlays = this.getOverlays();
     overlays.getLayers().clear();
     return this.getWmsCaps().then((caps) => {
-      this.progressBarMode = null;
       return caps;
     }).catch((err) => {
-      this.progressBarMode = null;
+      this.progressBar.mode = null;
       const snack = this.snackbar.open(`GetCapabilities - ${err}`, 'Close');
       const sub = snack.onAction().subscribe(() => {
         sub.unsubscribe();
@@ -188,62 +205,29 @@ export class AppComponent implements OnInit {
   }
 
   async getWmsCaps() {
-    this.progressBarMode = 'indeterminate';
+    this.progressBar.mode = 'indeterminate';
     const cpasLoadTime = window.localStorage.getItem('cpasLoadTime');
-    if (!this.checkIf5MinutesLater(DateTime.fromISO(cpasLoadTime)) && this.capabilities) {
-      console.log('cache caps');
+    if (!checkIf5MinutesLater(DateTime.fromISO(cpasLoadTime)) && this.capabilities) {
+      this.progressBar.color = 'accent';
+      // console.log('cache caps');
       setTimeout(() => {
-        // this.progressBarMode = null;
-      }, 1000)
-      return Promise.resolve(this.capabilities);
+        this.progressBar.mode = null;
+        return Promise.resolve(this.capabilities);
+      }, 500);
     } else {
+      this.progressBar.color = 'primary';
       const parser = new WMSCapabilities();
       return fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then(async response => {
         if (response.ok) {
           window.localStorage.setItem('cpasLoadTime', DateTime.local().toISO());
           const data = await response.text();
-          console.log('fresh caps')
+          // console.log('fresh caps');
+          this.progressBar.mode = null;
           return parser.read(data) as Icapabilities;
         } else {
           throw new Error(`status code: ${response.status}`);
         }
       });
-    }
-  }
-
-  checkIf5MinutesLater(cpasLoadTime: DateTime) {
-    if (!cpasLoadTime) {
-      return true;
-    } else {
-      const currentTime = DateTime.local();
-      console.log(cpasLoadTime.diff(currentTime).minutes)
-      // TODO if lode at 37 min then if after 40 it should also load new!
-      const is5 = (currentTime.minute % 5 === 0 && cpasLoadTime.minute !== currentTime.minute) ? true : false;
-      if (cpasLoadTime.diff(currentTime).minutes >= 5) {
-        return true;
-      } else {
-        return is5;
-      }
-    }
-  }
-
-
-  sliderOnChange(value: IdateChange) {
-    // console.log(value.last, value.now, value.next)
-    if (this.timeSource && this.timeSource.updateParams) {
-
-      const time = new Date(value.now);
-
-      // console.log(time.toISOString())
-      this.slidervalue = time.toISOString();
-      this.timeSource.updateParams({ 'TIME': value.now });
-
-      if (value.next) {
-        const preloadtime = new Date(value.next);
-        // console.log(preloadtime.toISOString())
-        // this.preloadSource.updateParams({ 'TIME': value.next });
-      }
-
     }
   }
 
@@ -259,11 +243,11 @@ export class AppComponent implements OnInit {
     // -----------------------------------
     // this.weatherlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
     // console.log(this.weatherlayername.value);
-    const RadarLayer = this.findLayerRecursive(AllLayer, this.weatherlayername.value);
+    const RadarLayer = findLayerRecursive(AllLayer, this.weatherlayername.value);
     // console.log(RadarLayer);
     // this.checkDimensionTime(RadarLayer.Dimension[0]);
     // this.datesString = RadarLayer.Dimension[0].values.split(',');
-    this.datesString = this.checkDimensionTime(RadarLayer.Dimension[0]);
+    this.datesString = checkDimensionTime(RadarLayer.Dimension[0]);
     this.addLayer(RadarLayer, this.datesString);
 
 
@@ -271,70 +255,6 @@ export class AppComponent implements OnInit {
     // setTimeout(() => {
     this.legendurl = RadarLayer.Style[0].LegendURL[0].OnlineResource;
     // })
-  }
-  /**
-  * check if rage or values
-  */
-  checkDimensionTime(Dimension) {
-    console.log(Dimension);
-    if (Dimension.name === 'time') {
-      let values = Dimension.values.split(',');
-      if (values.length === 1) { // Split fails - is range
-        values = Dimension.values.split('/');
-        if (values.length === 1) { // Split fails
-          console.log('time Fotmate not known!', values);
-        } else {
-          return this.generateTimeFromRange(values);
-        }
-      } else {
-        return values;
-      }
-      console.log(values);
-    } else {
-      console.log('no time Dimension!', Dimension.name);
-    }
-  }
-
-  generateTimeFromRange(values: string[]) {
-    const start = values[0], end = values[1], duaration = values[2];
-    let _values = [];
-    _values = this.enumerateDaysBetweenDates(start, end, duaration);
-    return _values;
-  }
-
-  enumerateDaysBetweenDates(startDate: string, endDate: string, duaration: string) {
-    console.log('dates: ', startDate, endDate);
-    const dates = [];
-
-    const currDate = DateTime.fromISO(startDate).toUTC();
-    const lastDate = DateTime.fromISO(endDate).toUTC();
-    const period = Duration.fromISO(duaration);
-
-    const _formatedDate = currDate.toISO(); // .toFormat('yyyy-MM-dd HH:mm:ss.SSS').replace(' ', 'T') + 'Z';
-    dates.push(_formatedDate);
-
-    let nextDate = currDate.plus(period);
-    while (nextDate.diff(lastDate).milliseconds <= 0) {
-      const formated = nextDate.toISO(); // .toFormat('yyyy-MM-dd HH:mm:ss.SSS').replace(' ', 'T') + 'Z';
-      dates.push(formated);
-      nextDate = nextDate.plus(period);
-    }
-    // console.log('dates', dates);
-    return dates;
-  }
-
-  getTileGrid(extent) {
-    const projExtent = getProjection(this.EPSGCODE).getExtent();
-    const startResolution = getWidth(projExtent) / 256;
-    const resolutions = new Array(22);
-    for (let i = 0, ii = resolutions.length; i < ii; ++i) {
-      resolutions[i] = startResolution / Math.pow(2, i);
-    }
-    return new TileGrid({
-      extent: extent,
-      resolutions: resolutions,
-      tileSize: [512, 256]
-    });
   }
 
   addLayer(Layer, times: string[]) {
@@ -355,7 +275,7 @@ export class AppComponent implements OnInit {
         'TILED': true
       },
       serverType: 'geoserver',
-      tileGrid: this.getTileGrid(layersextent)
+      tileGrid: getTileGrid(layersextent, this.EPSGCODE)
     });
     /*
         this.timeSource.on('tileloadstart', function() {
@@ -419,17 +339,6 @@ export class AppComponent implements OnInit {
     // overlays.getLayers().push(this.prelayer)
   }
 
-  setLayerOpacity(slider: MatSlider) {
-    this.layer.setOpacity(slider.value);
-  }
-
-  getLayerOpacity(): number {
-    if (!this.layer) {
-      return 0;
-    }
-    return this.layer.getOpacity();
-  }
-
   getOverlays() {
     let layer: LayerGroup;
     this.map.getLayers().forEach((_layer: LayerGroup) => {
@@ -439,26 +348,5 @@ export class AppComponent implements OnInit {
     });
     return layer;
   }
-
-  // Fachlayer.Wetter.Radar.FX-Produkt
-  findLayerRecursive(lLayergroup: any, path: string) {
-    const names: Array<string> = path.split('.');
-    if (names.length > 0) {
-      for (const layer of lLayergroup.Layer) {
-        if (layer.Name === names[0]) {
-          if (layer.Layer) {
-            names.shift();
-            const _path = names.join('.');
-            return this.findLayerRecursive(layer, _path);
-          } else {
-            return layer;
-          }
-        }
-      }
-    }
-
-  }
-
-
 
 }

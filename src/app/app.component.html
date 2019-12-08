@@ -1,5 +1,5 @@
 <!-- https://material.io/icons/ -->
-<mat-progress-bar *ngIf="isLoading()" mode="{{progressBarMode}}"></mat-progress-bar>
+<mat-progress-bar *ngIf="isLoading()" [color]="progressBar.color" [mode]="progressBar.mode"></mat-progress-bar>
 <header>
   <mat-toolbar>
     <mat-icon class="btn" (click)="refresh(true)">refresh</mat-icon>
