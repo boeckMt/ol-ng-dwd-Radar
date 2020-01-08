@@ -39,6 +39,7 @@ export class AppComponent implements OnInit {
     { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
+    { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_FF', viewValue: 'Windgeschwindigkeit' },
     { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
   ];
   public weatherlayername = new FormControl(this.weatherlayers[0].value);
@@ -240,7 +241,7 @@ export class AppComponent implements OnInit {
     const Service = caps.Service;
     const Capability = caps.Capability;
     const AllLayer = Capability.Layer;
-    // console.log(caps);
+    console.log(caps);
     this.dwdinfo.title = Service.Title;
     this.dwdinfo.link = Service.AccessConstraints;
     // -----------------------------------

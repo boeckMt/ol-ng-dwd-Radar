@@ -55,6 +55,18 @@ export function getLocation(map: Map, EPSGCODE) {
 }
 
 // TODO
-export function checkIfLocationInGermany(){
+export function checkIfLocationInGermany() {
     return true;
+}
+
+/**
+ *  ----------------------------------------------
+ */
+export function createImageLayer() {
+    const baseurl = `https://www.dwd.de/DWD/wetter/wv_allg/deutschland/bilder/`;
+    const urls = [
+        `vhs_brd_heutefrueh.jpg`,
+        `vhs_brd_heutemittag.jpg`
+    ]
+
 }
