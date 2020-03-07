@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/ol-ng-dwd-Radar/index.html",
+  "start_url": "/",
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",
