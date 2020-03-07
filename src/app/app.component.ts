@@ -11,6 +11,7 @@ import TileLayer from 'ol/layer/Tile';
 import XYZ from 'ol/source/XYZ';
 import LayerGroup from 'ol/layer/Group';
 import TileWMS from 'ol/source/TileWMS';
+import Attribution from 'ol/control/Attribution';
 
 
 import { PwaHelper } from './pwa.helper';
@@ -19,7 +20,6 @@ import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime } from './utills';
 import { findLayerRecursive, getTileGrid } from './map.utills';
-import { resolve } from 'url';
 
 
 export interface IProgress {
@@ -168,7 +168,7 @@ export class AppComponent implements OnInit {
         baselayers,
         overlays
       ],
-      controls: [],
+      controls: [new Attribution()],
       target: 'map'
     });
 

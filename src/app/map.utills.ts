@@ -2,14 +2,14 @@ import TileGrid from 'ol/tilegrid/TileGrid';
 import { getWidth } from 'ol/extent';
 import { get as getProjection } from 'ol/proj';
 
-import LayerGroup from 'ol/layer/Group';
+import { Layer, LayerEntity } from './ogc.types'
 
 import View from 'ol/View';
 import { transform } from 'ol/proj.js';
 import Map from 'ol/Map';
 
 
-export function findLayerRecursive(lLayergroup: LayerGroup, path: string) {
+export function findLayerRecursive(lLayergroup: Layer | LayerEntity, path: string) {
     const names: Array<string> = path.split('.');
     if (names.length > 0) {
         for (const layer of lLayergroup.Layer) {
