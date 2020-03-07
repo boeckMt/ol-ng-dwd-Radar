@@ -20,7 +20,6 @@
     "@angular/compiler": "8.2.14",
     "@angular/core": "8.2.14",
     "@angular/forms": "8.2.14",
-    "@angular/http": "7.2.14",
     "@angular/material": "^8.2.3",
     "@angular/platform-browser": "8.2.14",
     "@angular/platform-browser-dynamic": "8.2.14",
@@ -39,7 +38,7 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^0.803.25",
-    "@angular/cli": "^8.3.25",
+    "@angular/cli": "^9.0.5",
     "@angular/compiler-cli": "~8.2.14",
     "@angular/language-service": "~8.2.14",
     "@types/jasmine": "~2.8.8",
