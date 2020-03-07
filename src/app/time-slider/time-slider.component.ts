@@ -15,10 +15,12 @@ export class TimeSliderComponent implements OnInit, OnChanges {
   @Input() dates: string[];
   @Output('dateChange') change: EventEmitter<IdateChange> = new EventEmitter();
 
-  s_value = 0;
-  s_min = 0;
-  s_max: number;
-  s_step = 1;
+  public tickInterval = 1;
+  public thumbLabel = false;
+  public s_value = 0;
+  public s_min = 0;
+  public s_max: number;
+  public s_step = 1;
 
   d_value: string;
   playing = false;
