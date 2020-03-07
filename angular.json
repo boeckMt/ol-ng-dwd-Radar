@@ -136,5 +136,8 @@
       }
     }
   },
-  "defaultProject": "dwd-radar"
+  "defaultProject": "dwd-radar",
+  "cli": {
+    "analytics": "7be0cb47-f522-4adc-9a3a-06365ee33e97"
+  }
 }
