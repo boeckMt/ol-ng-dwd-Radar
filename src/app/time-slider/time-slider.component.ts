@@ -136,7 +136,6 @@ export class TimeSliderComponent implements OnInit, OnChanges {
       return 0;
     });
 
-    // console.log(_dates.join(','))
     // return { dateBefore: _dates[before[0].index], testDate: testDate.toISOString(), dateAfter: _dates[after[0].index] };
     if (before[0] && after[0]) {
       return { dateBefore: before[0].index, dateAfter: after[0].index };

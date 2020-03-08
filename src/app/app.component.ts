@@ -91,7 +91,7 @@ export class AppComponent implements OnInit {
     this.afterInit().then((caps) => {
       if (caps && 'version' in caps) {
         this.capabilities = caps;
-        console.log(caps)
+        // console.log(caps)
         this.findLayerInCaps(this.capabilities);
       }
     });
@@ -168,7 +168,9 @@ export class AppComponent implements OnInit {
         baselayers,
         overlays
       ],
-      controls: [new Attribution()],
+      controls: [new Attribution({
+        collapsed: false
+      })],
       target: 'map'
     });
 
@@ -184,7 +186,7 @@ export class AppComponent implements OnInit {
     this.afterInit().then((caps) => {
       if (caps && 'version' in caps) {
         this.capabilities = caps;
-        console.log(caps)
+        // console.log(caps)
         this.findLayerInCaps(this.capabilities);
       }
     });
@@ -269,7 +271,7 @@ export class AppComponent implements OnInit {
       layersextent = layersextent[0].extent;
     }
     this.timeSource = new TileWMS({
-      attributions: ['copyrigt DWD'],
+      attributions: ['&copy; <a href="https://www.dwd.de/DE/service/copyright/copyright_node.html" target="_blank">DWD</a>'],
       url: this.wmsurl,
       params: {
         'LAYERS': `dwd:${Layer.Name}`,
