@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, OnInit } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, HostBinding } from '@angular/core';
 
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
@@ -18,7 +18,7 @@ import { PwaHelper } from './pwa.helper';
 import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
-import { checkIf5MinutesLater, checkDimensionTime } from './utills';
+import { checkIf5MinutesLater, checkDimensionTime, formatDate } from './utills';
 import { findLayerRecursive, getTileGrid } from './map.utills';
 
 
@@ -35,14 +35,21 @@ export interface IProgress {
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements OnInit {
+  @HostBinding('class') class = 'app-container';
   public weatherlayers = [
-    { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
+    // { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
+    { value: 'Fachlayer.Wetter.Radar.WN-Produkt', viewValue: 'Radarvorhersage' },
+
+    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.WAWFOR_ieu_temperature_2m', viewValue: 'WAWFOR_ieu_temperature_2m' },
+    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.WAWFOR_ieu_qff', viewValue: 'WAWFOR_ieu_qff' },
+
+
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_FF', viewValue: 'Windgeschwindigkeit' },
     { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
   ];
-  public weatherlayername = new FormControl(this.weatherlayers[0].value);
+  public weatherlayername = new FormControl(this.weatherlayers[0]?.value ?? null);
 
   public datesString: string[];
   public slidervalue: string;
@@ -82,6 +89,8 @@ export class AppComponent implements OnInit {
   constructor(private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
     this.pwaHelper.checkUpdates();
   }
+
+  public formatDate = formatDate;
 
   public isLoading() {
     return this.progressBar.mode === 'indeterminate';
@@ -124,14 +133,13 @@ export class AppComponent implements OnInit {
 
       // console.log(time.toISOString())
       this.slidervalue = time.toISOString();
-      this.timeSource.updateParams({ 'TIME': value.now });
+      this.timeSource.updateParams({ TIME: value.now });
 
       if (value.next) {
         const preloadtime = new Date(value.next);
         // console.log(preloadtime.toISOString())
         // this.preloadSource.updateParams({ 'TIME': value.next });
       }
-
     }
   }
 
@@ -186,7 +194,6 @@ export class AppComponent implements OnInit {
     this.afterInit().then((caps) => {
       if (caps && 'version' in caps) {
         this.capabilities = caps;
-        // console.log(caps)
         this.findLayerInCaps(this.capabilities);
       }
     });
@@ -240,27 +247,29 @@ export class AppComponent implements OnInit {
 
   findLayerInCaps(caps: Icapabilities) {
     // this.snackbar.open(`caps loaded`, 'Close');
-    const Service = caps.Service;
-    const Capability = caps.Capability;
-    const AllLayer = Capability.Layer;
-    console.log(caps);
-    this.dwdinfo.title = Service.Title;
-    this.dwdinfo.link = Service.AccessConstraints;
+    const allLayers = caps?.Capability?.Layer ?? null;
+    this.dwdinfo.title = caps?.Service?.Title ?? 'NoTitle';
+    this.dwdinfo.link = caps?.Service?.AccessConstraints ?? null;
     // -----------------------------------
     // this.weatherlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
     // console.log(this.weatherlayername.value);
-    const RadarLayer = findLayerRecursive(AllLayer, this.weatherlayername.value);
-    // console.log(RadarLayer);
-    // this.checkDimensionTime(RadarLayer.Dimension[0]);
-    // this.datesString = RadarLayer.Dimension[0].values.split(',');
-    this.datesString = checkDimensionTime(RadarLayer.Dimension[0]);
-    this.addLayer(RadarLayer, this.datesString);
+    const layer = findLayerRecursive(allLayers, this.weatherlayername.value);
+    if (layer) {
+      // console.log(RadarLayer);
+      // this.checkDimensionTime(RadarLayer.Dimension[0]);
+      // this.datesString = RadarLayer.Dimension[0].values.split(',');
+      this.datesString = checkDimensionTime(layer.Dimension[0]);
+      this.addLayer(layer, this.datesString);
 
 
-    // fix: ExpressionChangedAfterItHasBeenCheckedError
-    // setTimeout(() => {
-    this.legendurl = RadarLayer.Style[0].LegendURL[0].OnlineResource;
-    // })
+      // fix: ExpressionChangedAfterItHasBeenCheckedError
+      // setTimeout(() => {
+      this.legendurl = layer.Style[0].LegendURL[0].OnlineResource;
+      // })
+    } else {
+      console.log(caps);
+      this.snackbar.open(`Layer ${this.weatherlayername.value} not found!`, 'Close');
+    }
   }
 
   addLayer(Layer, times: string[]) {
@@ -274,11 +283,11 @@ export class AppComponent implements OnInit {
       attributions: ['&copy; <a href="https://www.dwd.de/DE/service/copyright/copyright_node.html" target="_blank">DWD</a>'],
       url: this.wmsurl,
       params: {
-        'LAYERS': `dwd:${Layer.Name}`,
-        'VERSION': '1.3.0',
-        'CRS': this.view.getProjection(), // Layer.CRS[0]
-        'TIME': times[0],
-        'TILED': true
+        LAYERS: `dwd:${Layer.Name}`,
+        VERSION: '1.3.0',
+        CRS: this.view.getProjection(), // Layer.CRS[0]
+        TIME: times[0],
+        TILED: true
       },
       serverType: 'geoserver',
       tileGrid: getTileGrid(layersextent, this.EPSGCODE)

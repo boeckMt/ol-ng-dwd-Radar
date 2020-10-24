@@ -1,5 +1,6 @@
 import { Component, OnInit, OnChanges } from '@angular/core';
 import { Input, Output, EventEmitter } from '@angular/core';
+import { findClosestDate } from '../utills';
 
 export interface IdateChange {
   last: string | undefined; now: string; next: string | undefined;
@@ -10,19 +11,20 @@ export interface IdateChange {
   templateUrl: './time-slider.component.html',
   styleUrls: ['./time-slider.component.scss']
 })
-export class TimeSliderComponent implements OnInit, OnChanges {
+export class TimeSliderComponent implements OnChanges {
 
+  /** ISO string dates UTC */
   @Input() dates: string[];
   @Output('dateChange') change: EventEmitter<IdateChange> = new EventEmitter();
 
   public tickInterval = 1;
   public thumbLabel = false;
-  public s_value = 0;
-  public s_min = 0;
-  public s_max: number;
-  public s_step = 1;
+  public sValue = 0;
+  public sMin = 0;
+  public sMax: number;
+  public sStep = 1;
 
-  d_value: string;
+  dValue: string;
   playing = false;
   intervalID: any;
   isdisabled = true;
@@ -32,14 +34,14 @@ export class TimeSliderComponent implements OnInit, OnChanges {
 
   setSlider(value: '+' | '-') {
     if (value === '+') {
-      this.s_value += this.s_step;
-      if (this.s_value > this.s_max) {
-        this.s_value = this.s_max;
+      this.sValue += this.sStep;
+      if (this.sValue > this.sMax) {
+        this.sValue = this.sMax;
       }
     } else {
-      this.s_value -= this.s_step;
-      if (this.s_value < this.s_min) {
-        this.s_value = this.s_min;
+      this.sValue -= this.sStep;
+      if (this.sValue < this.sMin) {
+        this.sValue = this.sMin;
       }
     }
     this.sliderOnChange();
@@ -50,12 +52,12 @@ export class TimeSliderComponent implements OnInit, OnChanges {
     this.playing = !this.playing;
     console.log(this.playing);
     if (this.playing) {
-      if (this.s_value === this.s_max) {
-        this.s_value = this.s_min;
+      if (this.sValue === this.sMax) {
+        this.sValue = this.sMin;
       }
       this.intervalID = setInterval(() => {
         this.setSlider('+');
-        if (this.s_value === this.s_max) {
+        if (this.sValue === this.sMax) {
           clearInterval(this.intervalID);
           this.playing = false;
           console.log(this.playing);
@@ -70,84 +72,34 @@ export class TimeSliderComponent implements OnInit, OnChanges {
   }
 
   sliderOnChange(value?: any) {
-    this.d_value = this.dates[this.s_value];
+    this.dValue = this.dates[this.sValue];
     this.change.emit({
-      last: this.dates[this.s_value - 1],
-      now: this.dates[this.s_value],
-      next: this.dates[this.s_value + 1]
+      last: this.dates[this.sValue - 1],
+      now: this.dates[this.sValue],
+      next: this.dates[this.sValue + 1]
     });
   }
 
   ngOnChanges(changes: any) {
     // only run when property "dates" changed
     if (changes['dates'] && this.dates && this.dates.length > 0) {
+      console.log(this.dates)
       this.isdisabled = false;
-      this.s_max = this.dates.length - 1;
-      this.d_value = this.dates[this.s_min];
+      this.sMax = this.dates.length - 1;
+      this.dValue = this.dates[this.sMin];
 
 
-      const dateIndex = this.findClosestDate(this.dates).dateBefore;
+      const dateIndex = findClosestDate(this.dates).dateBefore;
       if (dateIndex) {
-        this.d_value = this.dates[dateIndex];
-        this.s_value = dateIndex;
+        this.dValue = this.dates[dateIndex];
+        this.sValue = dateIndex;
       } else {
-        this.d_value = this.dates[this.s_max];
-        this.s_value = this.s_max;
+        this.dValue = this.dates[this.sMax];
+        this.sValue = this.sMax;
       }
 
       this.sliderOnChange();
     }
   }
-
-  findClosestDate(_dates: string[]) {
-    const testDate = new Date();
-    const dates = _dates.map((date) => new Date(date));
-    const before = [];
-    const after = [];
-    const max = dates.length;
-
-    for (let i = 0; i < max; i++) {
-      const tar = dates[i];
-      const diff = (testDate.getTime() - tar.getTime());
-      if (diff > 0) {
-        before.push({ diff: diff, index: i });
-      } else {
-        after.push({ diff: diff, index: i });
-      }
-    }
-
-    before.sort((a, b) => {
-      if (a.diff < b.diff) {
-        return -1;
-      }
-      if (a.diff > b.diff) {
-        return 1;
-      }
-      return 0;
-    });
-
-    after.sort((a, b) => {
-      if (a.diff > b.diff) {
-        return -1;
-      }
-      if (a.diff < b.diff) {
-        return 1;
-      }
-      return 0;
-    });
-
-    // return { dateBefore: _dates[before[0].index], testDate: testDate.toISOString(), dateAfter: _dates[after[0].index] };
-    if (before[0] && after[0]) {
-      return { dateBefore: before[0].index, dateAfter: after[0].index };
-    } else {
-      return { dateBefore: false, dateAfter: false };
-    }
-
-  }
-
-  ngOnInit() {
-
-  }
-
 }
 

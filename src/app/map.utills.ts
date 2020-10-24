@@ -2,7 +2,7 @@ import TileGrid from 'ol/tilegrid/TileGrid';
 import { getWidth } from 'ol/extent';
 import { get as getProjection } from 'ol/proj';
 
-import { Layer, LayerEntity } from './ogc.types'
+import { Layer, LayerEntity } from './ogc.types';
 
 import View from 'ol/View';
 import { transform } from 'ol/proj.js';
@@ -10,14 +10,17 @@ import Map from 'ol/Map';
 
 
 export function findLayerRecursive(lLayergroup: Layer | LayerEntity, path: string) {
+    if (!lLayergroup || !path || path.length === 0) {
+        return null;
+    }
     const names: Array<string> = path.split('.');
     if (names.length > 0) {
         for (const layer of lLayergroup.Layer) {
             if (layer.Name === names[0]) {
-                if (layer.Layer) {
+                if (layer.Layer && names.length > 1) {
                     names.shift();
-                    const _path = names.join('.');
-                    return findLayerRecursive(layer, _path);
+                    const layerPath = names.join('.');
+                    return findLayerRecursive(layer, layerPath);
                 } else {
                     return layer;
                 }
@@ -35,8 +38,8 @@ export function getTileGrid(extent, EPSG) {
         resolutions[i] = startResolution / Math.pow(2, i);
     }
     return new TileGrid({
-        extent: extent,
-        resolutions: resolutions,
+        extent,
+        resolutions,
         tileSize: [512, 256]
     });
 }
@@ -67,6 +70,6 @@ export function createImageLayer() {
     const urls = [
         `vhs_brd_heutefrueh.jpg`,
         `vhs_brd_heutemittag.jpg`
-    ]
+    ];
 
 }

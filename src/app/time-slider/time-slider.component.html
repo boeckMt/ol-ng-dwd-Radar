@@ -11,8 +11,8 @@
     </mat-icon>
   </button>
 
-  <mat-slider [tickInterval]="tickInterval" [(ngModel)]="s_value" (change)="sliderOnChange($event)" [min]="s_min" [max]="s_max"
-    [value]="s_min" [step]="s_step" [disabled]="isdisabled" [thumbLabel]="thumbLabel"></mat-slider>
+  <mat-slider [tickInterval]="tickInterval" [(ngModel)]="sValue" (change)="sliderOnChange($event)" [min]="sMin" [max]="sMax"
+    [value]="sMin" [step]="sStep" [disabled]="isdisabled" [thumbLabel]="thumbLabel"></mat-slider>
 
   <button (click)="setSlider('+')" class="left" [disabled]="isdisabled" mat-icon-button>
     <mat-icon aria-label="right button" [ngClass]="{'disable': isdisabled }">

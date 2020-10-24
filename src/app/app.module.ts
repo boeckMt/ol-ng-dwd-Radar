@@ -19,6 +19,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
+/** dragable Footer */
 import { PwaHelper } from './pwa.helper';
 
 
