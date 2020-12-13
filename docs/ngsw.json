@@ -1,21 +1,24 @@
 {
   "configVersion": 1,
-  "timestamp": 1603569718271,
+  "timestamp": 1607871399441,
   "index": "/ol-ng-dwd-Radar/index.html",
   "assetGroups": [
     {
       "name": "app",
       "installMode": "prefetch",
       "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
       "urls": [
         "/ol-ng-dwd-Radar/favicon.ico",
         "/ol-ng-dwd-Radar/index.html",
-        "/ol-ng-dwd-Radar/main-es2015.101744a0eddbb62288e6.js",
-        "/ol-ng-dwd-Radar/main-es5.101744a0eddbb62288e6.js",
-        "/ol-ng-dwd-Radar/polyfills-es2015.442fa3cc45520cc0d518.js",
-        "/ol-ng-dwd-Radar/polyfills-es5.7c981f8bd0df07c576cf.js",
-        "/ol-ng-dwd-Radar/runtime-es2015.0811dcefd377500b5b1a.js",
-        "/ol-ng-dwd-Radar/runtime-es5.0811dcefd377500b5b1a.js",
+        "/ol-ng-dwd-Radar/main-es2015.2ce42c02c04fcdf35137.js",
+        "/ol-ng-dwd-Radar/main-es5.2ce42c02c04fcdf35137.js",
+        "/ol-ng-dwd-Radar/polyfills-es2015.817fefb838c2269531ba.js",
+        "/ol-ng-dwd-Radar/polyfills-es5.4d07a92606043416d0dc.js",
+        "/ol-ng-dwd-Radar/runtime-es2015.a1ac991fc00ebf39524f.js",
+        "/ol-ng-dwd-Radar/runtime-es5.a1ac991fc00ebf39524f.js",
         "/ol-ng-dwd-Radar/styles.cea10855914a700a611d.css"
       ],
       "patterns": []
@@ -24,11 +27,14 @@
       "name": "assets",
       "installMode": "lazy",
       "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
       "urls": [
-        "/ol-ng-dwd-Radar/MaterialIcons-Regular.012cf6a10129e2275d79.woff",
-        "/ol-ng-dwd-Radar/MaterialIcons-Regular.570eb83859dc23dd0eec.woff2",
-        "/ol-ng-dwd-Radar/MaterialIcons-Regular.a37b0c01c0baf1888ca8.ttf",
-        "/ol-ng-dwd-Radar/MaterialIcons-Regular.e79bfd88537def476913.eot",
+        "/ol-ng-dwd-Radar/MaterialIcons-Regular.4674f8ded773cb03e824.eot",
+        "/ol-ng-dwd-Radar/MaterialIcons-Regular.5e7382c63da0098d634a.ttf",
+        "/ol-ng-dwd-Radar/MaterialIcons-Regular.83bebaf37c09c7e1c3ee.woff",
+        "/ol-ng-dwd-Radar/MaterialIcons-Regular.cff684e59ffb052d72cb.woff2",
         "/ol-ng-dwd-Radar/assets/icons/icon-128x128.png",
         "/ol-ng-dwd-Radar/assets/icons/icon-144x144.png",
         "/ol-ng-dwd-Radar/assets/icons/icon-152x152.png",
@@ -44,6 +50,9 @@
       "name": "osmTiles",
       "installMode": "lazy",
       "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
       "urls": [],
       "patterns": [
         "https:\\/\\/[^/]*\\.openstreetmap\\.org\\/(?:.+\\/)?[^/]*\\.png"
@@ -58,14 +67,17 @@
       "maxSize": 100,
       "maxAge": 2592000000,
       "timeoutMs": 1000,
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
       "version": 1
     }
   ],
   "hashTable": {
-    "/ol-ng-dwd-Radar/MaterialIcons-Regular.012cf6a10129e2275d79.woff": "c6c953c2ccb2ca9abb21db8dbf473b5a435f0082",
-    "/ol-ng-dwd-Radar/MaterialIcons-Regular.570eb83859dc23dd0eec.woff2": "09963592e8c953cc7e14e3fb0a5b05d5042e8435",
-    "/ol-ng-dwd-Radar/MaterialIcons-Regular.a37b0c01c0baf1888ca8.ttf": "fc05de31234e0090f7ddc28ce1b23af4026cb1da",
-    "/ol-ng-dwd-Radar/MaterialIcons-Regular.e79bfd88537def476913.eot": "26fb8cecb5512223277b4d290a24492a0f09ede1",
+    "/ol-ng-dwd-Radar/MaterialIcons-Regular.4674f8ded773cb03e824.eot": "26fb8cecb5512223277b4d290a24492a0f09ede1",
+    "/ol-ng-dwd-Radar/MaterialIcons-Regular.5e7382c63da0098d634a.ttf": "fc05de31234e0090f7ddc28ce1b23af4026cb1da",
+    "/ol-ng-dwd-Radar/MaterialIcons-Regular.83bebaf37c09c7e1c3ee.woff": "c6c953c2ccb2ca9abb21db8dbf473b5a435f0082",
+    "/ol-ng-dwd-Radar/MaterialIcons-Regular.cff684e59ffb052d72cb.woff2": "09963592e8c953cc7e14e3fb0a5b05d5042e8435",
     "/ol-ng-dwd-Radar/assets/icons/icon-128x128.png": "51d84148c264b5b59291f38c5d8bd8a8515d1d06",
     "/ol-ng-dwd-Radar/assets/icons/icon-144x144.png": "8cb88fbd543ad841db476014572c81edfeb79ba7",
     "/ol-ng-dwd-Radar/assets/icons/icon-152x152.png": "5c65de266aa90dbffab456b7c220d88ef56547db",
@@ -75,13 +87,13 @@
     "/ol-ng-dwd-Radar/assets/icons/icon-72x72.png": "6176ff6fce7c01c6d4da4073f87a47065042b0de",
     "/ol-ng-dwd-Radar/assets/icons/icon-96x96.png": "69deeaf257127d6560dc95d587a2414af8cbc846",
     "/ol-ng-dwd-Radar/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "/ol-ng-dwd-Radar/index.html": "cb764f8f8927b269924511f1c70aedec4457db5c",
-    "/ol-ng-dwd-Radar/main-es2015.101744a0eddbb62288e6.js": "36728a2e7e2710f7204fb728ecbbfc38f0862f3c",
-    "/ol-ng-dwd-Radar/main-es5.101744a0eddbb62288e6.js": "5c9b9c598d905272b60d20a82bb7998fe6501478",
-    "/ol-ng-dwd-Radar/polyfills-es2015.442fa3cc45520cc0d518.js": "8779ed8d9bf0580e1b50b352a9b8fd520be24433",
-    "/ol-ng-dwd-Radar/polyfills-es5.7c981f8bd0df07c576cf.js": "ce1637b2c0441405198c4eb0185768666fb2b0c8",
-    "/ol-ng-dwd-Radar/runtime-es2015.0811dcefd377500b5b1a.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
-    "/ol-ng-dwd-Radar/runtime-es5.0811dcefd377500b5b1a.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
+    "/ol-ng-dwd-Radar/index.html": "1d064c6ae1cdb09470f6b163b97531706ea27a40",
+    "/ol-ng-dwd-Radar/main-es2015.2ce42c02c04fcdf35137.js": "1a8e2f6503fcbfc190615cfe4ad7a91455a6838d",
+    "/ol-ng-dwd-Radar/main-es5.2ce42c02c04fcdf35137.js": "d8279f0941ac902446eb6f2e34bc38dd4eba82e1",
+    "/ol-ng-dwd-Radar/polyfills-es2015.817fefb838c2269531ba.js": "65c537467564ee0ba776b629f71ed3413413a7cb",
+    "/ol-ng-dwd-Radar/polyfills-es5.4d07a92606043416d0dc.js": "d102d92a05af3c4695590ad7c71844158ed0c998",
+    "/ol-ng-dwd-Radar/runtime-es2015.a1ac991fc00ebf39524f.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
+    "/ol-ng-dwd-Radar/runtime-es5.a1ac991fc00ebf39524f.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
     "/ol-ng-dwd-Radar/styles.cea10855914a700a611d.css": "50243e2484bd1676d5f97815b33f023b7f457a6b"
   },
   "navigationUrls": [
@@ -101,5 +113,6 @@
       "positive": false,
       "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
     }
-  ]
+  ],
+  "navigationRequestStrategy": "performance"
 }

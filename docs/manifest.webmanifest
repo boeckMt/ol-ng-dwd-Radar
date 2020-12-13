@@ -5,7 +5,7 @@
   "theme_color": "#000",
   "background_color": "#000",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "scope": "/ol-ng-dwd-Radar/",
   "start_url": "/ol-ng-dwd-Radar/",
   "icons": [
