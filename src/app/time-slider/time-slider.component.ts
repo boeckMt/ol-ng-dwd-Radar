@@ -50,7 +50,7 @@ export class TimeSliderComponent implements OnChanges {
   playSlider() {
     const time_step = 1400;
     this.playing = !this.playing;
-    console.log(this.playing);
+    // console.log(this.playing);
     if (this.playing) {
       if (this.sValue === this.sMax) {
         this.sValue = this.sMin;
@@ -60,13 +60,13 @@ export class TimeSliderComponent implements OnChanges {
         if (this.sValue === this.sMax) {
           clearInterval(this.intervalID);
           this.playing = false;
-          console.log(this.playing);
+          // console.log(this.playing);
         }
       }, time_step);
     } else {
-      console.log(this.intervalID);
+      // console.log(this.intervalID);
       clearInterval(this.intervalID);
-      console.log(this.playing);
+      // console.log(this.playing);
     }
 
   }
@@ -83,7 +83,7 @@ export class TimeSliderComponent implements OnChanges {
   ngOnChanges(changes: any) {
     // only run when property "dates" changed
     if (changes['dates'] && this.dates && this.dates.length > 0) {
-      console.log(this.dates)
+      // console.log(this.dates)
       this.isdisabled = false;
       this.sMax = this.dates.length - 1;
       this.dValue = this.dates[this.sMin];

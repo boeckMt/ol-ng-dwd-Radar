@@ -18,13 +18,20 @@ import { PwaHelper } from './pwa.helper';
 import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
-import { checkIf5MinutesLater, checkDimensionTime, formatDate } from './utills';
+import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addMinutes, addHours } from './utills';
 import { findLayerRecursive, getTileGrid } from './map.utills';
 
 
 export interface IProgress {
   mode: 'indeterminate' | '';
   color: 'primary' | 'accent';
+}
+
+export interface IweatherlayerItem {
+  value: string;
+  viewValue: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 
@@ -36,9 +43,9 @@ export interface IProgress {
 })
 export class AppComponent implements OnInit {
   @HostBinding('class') class = 'app-container';
-  public weatherlayers = [
+  public weatherlayers: IweatherlayerItem[] = [
     // { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
-    { value: 'Fachlayer.Wetter.Radar.WN-Produkt', viewValue: 'Radarvorhersage' },
+    { value: 'Fachlayer.Wetter.Radar.WN-Produkt', viewValue: 'Radarvorhersage', startDate: addHours(DateTime.local().toISO(), 2, '-') },
 
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.WAWFOR_ieu_temperature_2m', viewValue: 'WAWFOR_ieu_temperature_2m' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.WAWFOR_ieu_qff', viewValue: 'WAWFOR_ieu_qff' },
@@ -258,7 +265,15 @@ export class AppComponent implements OnInit {
       // console.log(RadarLayer);
       // this.checkDimensionTime(RadarLayer.Dimension[0]);
       // this.datesString = RadarLayer.Dimension[0].values.split(',');
-      this.datesString = checkDimensionTime(layer.Dimension[0]);
+      const layerConfig = this.weatherlayers.find(l => l.value === this.weatherlayername.value);
+      // console.log(layerConfig)
+      const allDates = checkDimensionTime(layer.Dimension[0]);
+      if (layerConfig && (layerConfig.startDate || layerConfig.endDate)) {
+        this.datesString = getDatesBetween(allDates, layerConfig.startDate, layerConfig.endDate);
+      } else {
+        this.datesString = allDates;
+      }
+
       this.addLayer(layer, this.datesString);
 
 
