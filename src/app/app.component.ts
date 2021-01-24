@@ -99,7 +99,7 @@ export class AppComponent implements OnInit {
   // prelayer: TileLayer;
 
   constructor(private elRef: ElementRef, private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
-    this.pwaHelper.checkUpdates();
+
   }
 
   public formatDate = formatDate;
@@ -160,6 +160,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.pwaHelper.checkUpdates();
+    this.pwaHelper.showInstall();
     this.initMap();
   }
 
