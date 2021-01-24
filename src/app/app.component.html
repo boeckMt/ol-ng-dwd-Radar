@@ -2,47 +2,20 @@
 <mat-progress-bar *ngIf="isLoading()" [color]="progressBar.color" [mode]="progressBar.mode"></mat-progress-bar>
 <header>
   <mat-toolbar>
-    <mat-icon class="btn" (click)="refresh()">refresh</mat-icon>
+    <mat-icon class="btn" title="refresh" (click)="refresh()">refresh</mat-icon>
     <span class="title">
       {{layertitle}}
     </span>
     <span class="fill-space"></span>
     <nav>
-      <mat-icon (click)="showLegend()">{{(legend)?'close':'more_vert'}}</mat-icon>
+      <mat-icon [title]="(navOpen)?'close':'open'" (click)="showDetails()">{{(navOpen)?'close':'more_vert'}}</mat-icon>
     </nav>
   </mat-toolbar>
 </header>
-<main>
+<main [ngClass]="{'show-details': navOpen}">
   <div id="map" class="map"></div>
-  <aside *ngIf="legend" [ngClass]="{'is-loading':isLoading()}">
-    <mat-card class="example-card">
-      <mat-card-header>
-        <mat-form-field>
-          <mat-select (selectionChange)="produktChange()" placeholder="Set Produkt" [formControl]="weatherlayername">
-            <mat-option *ngFor="let produkt of weatherlayers" [value]="produkt.value">
-              {{ produkt.viewValue }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </mat-card-header>
-
-      <mat-card-content *ngIf="legendurl">
-        <p>
-          {{layerdescription}}
-        </p>
-
-        <label for="opacity-slider">Opacity:</label>
-        <mat-slider id="opacity-slider" [tickInterval]="1" (change)="setLayerOpacity($event)" min="0" max="1" [value]="getLayerOpacity()" step="0.1"></mat-slider>
-  
-        <p>
-          <img [src]="legendurl" alt="Layer Legend">
-        </p>
-      </mat-card-content>
-
-    </mat-card>
-  </aside>
 </main>
-<footer>
+<section class="details">
   <mat-toolbar>
     <mat-toolbar-row>
       <app-time-slider [dates]="datesString" (dateChange)="sliderOnChange($event)"></app-time-slider>
@@ -53,4 +26,30 @@
       </span>
     </mat-toolbar-row>
   </mat-toolbar>
+  <section *ngIf="navOpen" class="details-body" [ngClass]="{'is-loading':isLoading()}">
+    <mat-form-field class="produkt-select col">
+      <mat-select (selectionChange)="produktChange()" placeholder="Set Produkt" [formControl]="weatherlayername">
+        <mat-option *ngFor="let produkt of weatherlayers" [value]="produkt.value">
+          {{ produkt.viewValue }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <div class="legend col" *ngIf="legendurl">
+      <div>
+        {{layerdescription}}
+      </div>
+
+      <label for="opacity-slider">Opacity:</label>
+      <mat-slider id="opacity-slider" [tickInterval]="1" (change)="setLayerOpacity($event)" min="0" max="1"
+        [value]="getLayerOpacity()" step="0.1"></mat-slider>
+
+      <div>
+        <img [src]="legendurl" alt="Layer Legend">
+      </div>
+    </div>
+
+    <app-dwd-weather-reports class="col"></app-dwd-weather-reports>
+  </section>
+</section>
+<footer>
 </footer>

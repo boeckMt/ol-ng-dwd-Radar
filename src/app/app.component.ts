@@ -20,6 +20,7 @@ import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addMinutes, addHours } from './utills';
 import { findLayerRecursive, getTileGrid } from './map.utills';
+import { ElementRef } from '@angular/core';
 
 
 export interface IProgress {
@@ -43,6 +44,8 @@ export interface IweatherlayerItem {
 })
 export class AppComponent implements OnInit {
   @HostBinding('class') class = 'app-container';
+  @HostBinding("class.open-nav") navOpen = false;
+
   public weatherlayers: IweatherlayerItem[] = [
     // { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
     { value: 'Fachlayer.Wetter.Radar.WN-Produkt', viewValue: 'Radarvorhersage', startDate: addHours(DateTime.local().toISO(), 2, '-') },
@@ -67,8 +70,6 @@ export class AppComponent implements OnInit {
     color: 'primary'
   };
 
-  public legend = false;
-
   public layertitle = 'DWD Radar';
   public layerdescription = '';
   public dwdinfo: {
@@ -89,11 +90,15 @@ export class AppComponent implements OnInit {
   /** EPSG:3857 */
   fallbackExtent = [183082.1073087257, 5345076.652029778, 2017570.7861529556, 7786169.587345167];
   /** Muenchen */
-  startCenter = [1288323.189210665, 6134720.493257317];
+  startLocation = {
+    title: 'München',
+    center: [1288323.189210665, 6134720.493257317],
+    zoom: 9
+  }
   // preloadSource: TileWMS;
   // prelayer: TileLayer;
 
-  constructor(private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
+  constructor(private elRef: ElementRef, private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
     this.pwaHelper.checkUpdates();
   }
 
@@ -113,8 +118,12 @@ export class AppComponent implements OnInit {
     });
   }
 
-  public showLegend() {
-    this.legend = !this.legend;
+
+  public showDetails() {
+    if (this.navOpen && this.elRef.nativeElement) {
+      this.elRef.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    this.navOpen = !this.navOpen;
   }
 
   public produktChange() {
@@ -156,12 +165,13 @@ export class AppComponent implements OnInit {
 
   initMap() {
     this.view = new View({
-      center: this.startCenter,
-      zoom: 9,
+      center: this.startLocation.center,
+      zoom: this.startLocation.zoom,
       projection: this.EPSGCODE
     });
 
     const baselayer = new TileLayer({
+      className: 'baseLayer',
       preload: Infinity,
       source: new XYZ({
         // url: `https://tile.osmand.net/hd/{z}/{x}/{y}.png`

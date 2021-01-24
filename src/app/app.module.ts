@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { environment } from '../environments/environment';
@@ -9,7 +9,6 @@ import { TimeSliderComponent } from './time-slider/time-slider.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -21,12 +20,14 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 
 /** dragable Footer */
 import { PwaHelper } from './pwa.helper';
+import { DwdWeatherReportsComponent } from './dwd-weather-reports/dwd-weather-reports.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    TimeSliderComponent
+    TimeSliderComponent,
+    DwdWeatherReportsComponent
   ],
   imports: [
     BrowserModule,
@@ -34,7 +35,7 @@ import { PwaHelper } from './pwa.helper';
     ReactiveFormsModule,
     BrowserAnimationsModule,
     MatToolbarModule, MatProgressBarModule, MatIconModule, MatSliderModule,
-    MatButtonModule, MatSelectModule, MatCardModule, MatInputModule, MatFormFieldModule, MatSnackBarModule,
+    MatButtonModule, MatSelectModule, MatInputModule, MatFormFieldModule, MatSnackBarModule,
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [PwaHelper],
