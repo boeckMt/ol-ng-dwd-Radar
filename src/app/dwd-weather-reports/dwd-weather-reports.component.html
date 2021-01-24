@@ -1,0 +1,32 @@
+<div>
+  <h3>Links zum DWD</h3>
+  <mat-form-field class="produkt-select col">
+    <h4>Aktuelles Wetter</h4>
+    <!-- [formControl]="weatherlayername"  (selectionChange)="" placeholder="Set Location" -->
+    <mat-select [(value)]="location1">
+      <mat-option *ngFor="let location of locations" [value]="location.id">
+        <a [href]="location.linkWeatherOnSite" target="_blank">{{ location.title }}</a>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field class="produkt-select col">
+    <h4>Aktuelles Wetter (Ort)</h4>
+    <!-- [formControl]="weatherlayername"  (selectionChange)="" placeholder="Set Location" -->
+    <mat-select [(value)]="location2">
+      <mat-option *ngFor="let place of places" [value]="place.id">
+        <a [href]="place.linkWeatherOnSite" target="_blank">{{ place.title }}</a>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field class="produkt-select col">
+    <h4>Wet­ter­be­rich­te (Text)</h4>
+    <!-- [formControl]="weatherlayername"  (selectionChange)="" placeholder="Set Location" -->
+    <mat-select [(value)]="location1">
+      <mat-option *ngFor="let location of locations" [value]="location.id" [attr.selected]="location.id === location1">
+        <a [href]="location.linkForecastCurrent" target="_blank">{{ location.title }}</a>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
