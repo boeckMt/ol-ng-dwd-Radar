@@ -11,7 +11,6 @@ $footer-height-mobile: 27px;
 $details-min-height: 128px;
 $details-min-height-mobile: 112px;
 
-$details-height: 100vh / 3;
 
 .mat-toolbar {
   background: #004D40;
@@ -73,18 +72,20 @@ main {
   }
 
   &.show-details {
-    height: calc(100vh - (100vh / 3) - (#{$header-height} + #{$footer-height}));
+    height: calc(100vh - (100vh / 4) - (#{$header-height} + #{$footer-height}));
 
     .map {
       width: 100%;
     }
   }
+
+  transition: height 0.15s ease-out;
 }
 
 
 .details {
   width: 100%;
-  min-height: calc(100vh / 3);
+  min-height: calc(100vh / 4);
 
   .mat-icon {
     color: #EF6C00;
@@ -105,10 +106,6 @@ main {
     padding-top: 1rem;
     padding-bottom: 1rem;
 
-    @media (max-width: 600px) {
-      display: block;
-    }
-
     .col {
       flex: 1;
 
@@ -119,6 +116,16 @@ main {
 
       &:nth-of-type(2) {
         padding-left: 0.5rem;
+        padding-right: 1rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      display: block;
+
+      .col {
+        display: block;
+        padding-left: 1rem;
         padding-right: 1rem;
       }
     }
