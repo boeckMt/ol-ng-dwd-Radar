@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1611516358293,
+  "timestamp": 1611522992365,
   "index": "/ol-ng-dwd-Radar/index.html",
   "assetGroups": [
     {
@@ -13,8 +13,9 @@
       "urls": [
         "/ol-ng-dwd-Radar/favicon.ico",
         "/ol-ng-dwd-Radar/index.html",
-        "/ol-ng-dwd-Radar/main-es2015.979f0f9cb63010bd0ba2.js",
-        "/ol-ng-dwd-Radar/main-es5.979f0f9cb63010bd0ba2.js",
+        "/ol-ng-dwd-Radar/main-es2015.6262fda61c6e9d592eaf.js",
+        "/ol-ng-dwd-Radar/main-es5.6262fda61c6e9d592eaf.js",
+        "/ol-ng-dwd-Radar/manifest.webmanifest",
         "/ol-ng-dwd-Radar/polyfills-es2015.38b4851f3ee2c7dab617.js",
         "/ol-ng-dwd-Radar/polyfills-es5.6ebdc587e9344d7f0400.js",
         "/ol-ng-dwd-Radar/runtime-es2015.a4dadbc03350107420a4.js",
@@ -55,7 +56,7 @@
       },
       "urls": [],
       "patterns": [
-        "https:\\/\\/[^/]*\\.openstreetmap\\.org\\/(?:.+\\/)?[^/]*\\.png"
+        "https:\\/\\/[^/]*\\.tile\\.openstreetmap\\.org\\/(?:.+\\/)?[^/]*\\.png"
       ]
     }
   ],
@@ -87,9 +88,10 @@
     "/ol-ng-dwd-Radar/assets/icons/icon-72x72.png": "6176ff6fce7c01c6d4da4073f87a47065042b0de",
     "/ol-ng-dwd-Radar/assets/icons/icon-96x96.png": "69deeaf257127d6560dc95d587a2414af8cbc846",
     "/ol-ng-dwd-Radar/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "/ol-ng-dwd-Radar/index.html": "51f3c6c3a806234bf18a361ddc460477a5d83061",
-    "/ol-ng-dwd-Radar/main-es2015.979f0f9cb63010bd0ba2.js": "cbed682aab965af1d128f0a3957acdf61964ecda",
-    "/ol-ng-dwd-Radar/main-es5.979f0f9cb63010bd0ba2.js": "79155cb654f1f8e54e85dfbf0f60e2b1c9cd1528",
+    "/ol-ng-dwd-Radar/index.html": "34e5b437d7083d6062296e4c3aa61a85531c97fc",
+    "/ol-ng-dwd-Radar/main-es2015.6262fda61c6e9d592eaf.js": "b903b3ca85497afa6e0dfd3f2a8ad469dd1456e0",
+    "/ol-ng-dwd-Radar/main-es5.6262fda61c6e9d592eaf.js": "8a186406b344991182a577ceeb1837a9ff205d05",
+    "/ol-ng-dwd-Radar/manifest.webmanifest": "ba8ed8f62fc74b51be40eeedf06f237e2be03de4",
     "/ol-ng-dwd-Radar/polyfills-es2015.38b4851f3ee2c7dab617.js": "65c537467564ee0ba776b629f71ed3413413a7cb",
     "/ol-ng-dwd-Radar/polyfills-es5.6ebdc587e9344d7f0400.js": "dfc9203dc43f5c9cc3f3dc831cd629d5e1089231",
     "/ol-ng-dwd-Radar/runtime-es2015.a4dadbc03350107420a4.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
