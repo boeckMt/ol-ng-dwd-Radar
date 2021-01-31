@@ -1,8 +1,11 @@
 import { ApplicationRef, Injectable } from '@angular/core';
-import { SwUpdate, UpdateAvailableEvent } from '@angular/service-worker';
+import { SwUpdate } from '@angular/service-worker';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { first } from 'rxjs/operators'
 
+
+export const currentVersionKey = 'ol-ng-dwd-Radar-current-version';
+export const newVersionKey = 'ol-ng-dwd-Radar-new-version';
 @Injectable({
   providedIn: 'root'
 })
@@ -17,13 +20,20 @@ export class PwaHelper {
 
   checkUpdates() {
     if (this.swUpdate.isEnabled) {
-      this.swUpdate.available.subscribe((event: UpdateAvailableEvent) => {
+      console.log('check swUpdate');
+      this.swUpdate.available.subscribe((event) => {
         // check Update
+        window.localStorage.setItem(currentVersionKey, event.current.hash);
+        window.localStorage.setItem(newVersionKey, event.available.hash);
+
+        console.log('available: current version is', event.current);
+        console.log('available: available version is', event.available);
 
         // download Update
-        this.swUpdate.activateUpdate().then(e => {
+        this.swUpdate.activateUpdate().then(() => {
           // Update gets downloaded
           // `Current version is: ${event.current} - Update Available; ${event.available}`
+
           const snack = this.snackbar.open(`Update for the App Available`, 'Reload');
           const sub = snack.onAction().subscribe(() => {
             window.location.reload();
@@ -45,16 +55,20 @@ export class PwaHelper {
       // It's not iOS
       if (window.matchMedia('(display-mode: browser').matches) {
         // We are in the browser
-        window.addEventListener('beforeinstallprompt', event => {
-          event.preventDefault();
-          const sb = this.snackbar.open('Do you want to install this App?', 'Install', { duration: 5000 });
-          sb.onAction().subscribe(() => {
-            (event as any).prompt();
-            (event as any).userChoice.then();
-          });
-          return false;
-        });
+        window.addEventListener('beforeinstallprompt', this.beforeinstallprompt);
       }
     }
+  }
+
+  beforeinstallprompt = (event) => {
+    event.preventDefault();
+    const sb = this.snackbar.open('Do you want to install this App?', 'Install', { duration: 5000 });
+    const sub = sb.onAction().subscribe(() => {
+      (event as any).prompt();
+      (event as any).userChoice.then();
+      sub.unsubscribe();
+    });
+    window.removeEventListener('beforeinstallprompt', this.beforeinstallprompt);
+    return false;
   }
 }

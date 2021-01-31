@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, OnInit, HostBinding } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit } from '@angular/core';
 
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
@@ -14,11 +14,11 @@ import TileWMS from 'ol/source/TileWMS';
 import Attribution from 'ol/control/Attribution';
 
 
-import { PwaHelper } from './pwa.helper';
+import { currentVersionKey, newVersionKey, PwaHelper } from './pwa.helper';
 import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
-import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addMinutes, addHours } from './utills';
+import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours } from './utills';
 import { findLayerRecursive, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
 
@@ -42,9 +42,14 @@ export interface IweatherlayerItem {
   styleUrls: ['app.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   @HostBinding('class') class = 'app-container';
   @HostBinding("class.open-nav") navOpen = false;
+
+  swVersion = {
+    current: null,
+    available: null
+  };
 
   public weatherlayers: IweatherlayerItem[] = [
     // { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
@@ -118,12 +123,22 @@ export class AppComponent implements OnInit {
     });
   }
 
+  updateMapSize() {
+    if (this.map) {
+      console.log('update size')
+      setTimeout(() => {
+        this.map.updateSize();
+      }, 200);
+    }
+  }
+
 
   public showDetails() {
     if (this.navOpen && this.elRef.nativeElement) {
       this.elRef.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
     }
     this.navOpen = !this.navOpen;
+    this.updateMapSize();
   }
 
   public produktChange() {
@@ -160,9 +175,17 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.pwaHelper.checkUpdates();
+    // this.pwaHelper.checkUpdates(); this is already done pwaHelpers constructor
     this.pwaHelper.showInstall();
     this.initMap();
+    if (localStorage) {
+      this.swVersion.available = localStorage.getItem(newVersionKey);
+      this.swVersion.current = localStorage.getItem(currentVersionKey);
+    }
+  }
+
+  ngAfterViewInit() {
+    this.updateMapSize();
   }
 
   initMap() {
@@ -216,6 +239,7 @@ export class AppComponent implements OnInit {
         this.findLayerInCaps(this.capabilities);
       }
     });
+    // this.progressBar.mode = null;
   }
 
   async afterInit() {

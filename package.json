@@ -7,7 +7,8 @@
     "start": "ng serve",
     "build": "rm -rf docs/ && ng build --prod",
     "buildGP": "rm -rf docs/ && ng build --prod --output-path docs --base-href /ol-ng-dwd-Radar/",
-    "pwa": "http-server -p 8080 docs/",
+    "postbuildGP": "rm -rf tmp/ol-ng-dwd-Radar/* && cp -R docs/* tmp/ol-ng-dwd-Radar/",
+    "serveLocalPwa": "http-server -p 8080 -c-1 ./tmp",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

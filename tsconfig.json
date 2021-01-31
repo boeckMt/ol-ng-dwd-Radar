@@ -14,6 +14,23 @@
     "lib": [
       "es2018",
       "dom"
+    ],
+    "paths": {
+      "ol": [
+        "node_modules/ol/src"
+      ],
+      "ol/*": [
+        "node_modules/ol/src/*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "node_modules/ol/**/*"
+  ],
+  "typeAcquisition": {
+    "exclude": [
+      "ol"
     ]
   },
   "angularCompilerOptions": {

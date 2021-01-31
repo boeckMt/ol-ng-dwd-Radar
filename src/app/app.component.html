@@ -15,7 +15,7 @@
 <main [ngClass]="{'show-details': navOpen}">
   <div id="map" class="map"></div>
 </main>
-<section class="details">
+<section class="map-time-control">
   <mat-toolbar>
     <mat-toolbar-row>
       <app-time-slider [dates]="datesString" (dateChange)="sliderOnChange($event)"></app-time-slider>
@@ -26,30 +26,35 @@
       </span>
     </mat-toolbar-row>
   </mat-toolbar>
-  <section *ngIf="navOpen" class="details-body" [ngClass]="{'is-loading':isLoading()}">
-    <mat-form-field class="produkt-select col">
-      <mat-select (selectionChange)="produktChange()" placeholder="Set Produkt" [formControl]="weatherlayername">
-        <mat-option *ngFor="let produkt of weatherlayers" [value]="produkt.value">
-          {{ produkt.viewValue }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <div class="legend col" *ngIf="legendurl">
-      <div>
-        {{layerdescription}}
-      </div>
-
-      <label for="opacity-slider">Opacity:</label>
-      <mat-slider id="opacity-slider" [tickInterval]="1" (change)="setLayerOpacity($event)" min="0" max="1"
-        [value]="getLayerOpacity()" step="0.1"></mat-slider>
-
-      <div>
-        <img [src]="legendurl" alt="Layer Legend">
-      </div>
+</section>
+<section class="details" *ngIf="navOpen" [ngClass]="{'is-loading':isLoading()}">
+  <mat-form-field class="produkt-select col">
+    <mat-select (selectionChange)="produktChange()" placeholder="Set Produkt" [formControl]="weatherlayername">
+      <mat-option *ngFor="let produkt of weatherlayers" [value]="produkt.value">
+        {{ produkt.viewValue }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <div class="legend col" *ngIf="legendurl">
+    <div>
+      {{layerdescription}}
     </div>
 
-    <app-dwd-weather-reports class="col"></app-dwd-weather-reports>
-  </section>
+    <label for="opacity-slider">Opacity:</label>
+    <mat-slider id="opacity-slider" [tickInterval]="1" (change)="setLayerOpacity($event)" min="0" max="1"
+      [value]="getLayerOpacity()" step="0.1"></mat-slider>
+
+    <div>
+      <img [src]="legendurl" alt="Layer Legend">
+    </div>
+  </div>
+
+  <app-dwd-weather-reports class="col"></app-dwd-weather-reports>
 </section>
-<footer>
+<footer *ngIf="navOpen">
+  <section class="foter-inner">
+    <div class="left" *ngIf="swVersion.available" title="{{swVersion.available}}">version: {{swVersion.available}}</div>
+    <div class="right"><a href="https://github.com/boeckMt/ol-ng-dwd-Radar" target="_blank">check the
+        source code</a></div>
+  </section>
 </footer>
