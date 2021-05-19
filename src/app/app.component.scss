@@ -23,6 +23,20 @@ $bottom-toolbar-height-mobile: 112px;
   background-color: #EF6C00;
 }
 
+.mat-progress-bar.mat-debug {
+  .mat-progress-bar-background {
+    fill: #bf00ef80;
+  }
+
+  .mat-progress-bar-buffer {
+    background-color: #bf00ef80;
+  }
+
+  .mat-progress-bar-fill::after {
+    background-color: #bf00ef;
+  }
+}
+
 header {
   margin-bottom: 0;
   background: #004D40;

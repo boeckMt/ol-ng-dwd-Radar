@@ -29,11 +29,12 @@ import { ElementRef } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { ProgressBarMode } from '@angular/material/progress-bar';
 import { ButtonControl } from './ol-custom-control';
+import { environment } from './../environments/environment';
 
 
 export interface IProgress {
   mode: ProgressBarMode;
-  color: ThemePalette
+  color: ThemePalette | 'debug';
 }
 
 export interface IweatherlayerItem {
@@ -55,7 +56,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   @HostBinding("class.open-nav") navOpen = false;
 
   /** for debugging */
-  useCapsFromStore = false;
+  useCapsFromStore = true;
 
   swVersion = {
     current: null,
@@ -115,7 +116,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   // prelayer: TileLayer;
 
   constructor(private elRef: ElementRef, private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
-
+    if (environment.production) {
+      this.useCapsFromStore = false;
+    }
   }
 
   public formatDate = formatDate;
@@ -291,7 +294,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.capabilities = JSON.parse(localCaps) as Icapabilities;
       }
 
-      this.progressBar.color = 'warn';
+      this.progressBar.color = 'debug';
       // console.log('cache caps', this.capabilities);
       return new Promise<Icapabilities>((resolve, reject) => {
         setTimeout(() => {
@@ -301,6 +304,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       });
 
     } else {
+      window.localStorage.removeItem('lastLocalCpas');
       const cpasLoadTime = window.localStorage.getItem('cpasLoadTime');
       if (!checkIf5MinutesLater(DateTime.fromISO(cpasLoadTime)) && this.capabilities) {
         this.progressBar.color = 'accent';
@@ -321,7 +325,9 @@ export class AppComponent implements OnInit, AfterViewInit {
             // console.log('fresh caps');
             this.progressBar.mode = null;
             const caps = parser.read(data) as Icapabilities;
-            window.localStorage.setItem('lastLocalCpas', JSON.stringify(caps));
+            if (this.useCapsFromStore) {
+              window.localStorage.setItem('lastLocalCpas', JSON.stringify(caps));
+            }
             return caps;
           } else {
             throw new Error(`status code: ${response.status}`);

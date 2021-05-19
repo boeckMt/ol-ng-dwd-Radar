@@ -20,7 +20,7 @@ export class PwaHelper {
 
   checkUpdates() {
     if (this.swUpdate.isEnabled) {
-      console.log('check swUpdate');
+      console.log('check swUpdate', this.swUpdate);
       this.swUpdate.available.subscribe((event) => {
         // check Update
         window.localStorage.setItem(currentVersionKey, event.current.hash);
@@ -42,6 +42,15 @@ export class PwaHelper {
         });
       });
       this.swUpdate.checkForUpdate();
+
+      // Handling an unrecoverable state of versions
+      this.swUpdate.unrecoverable.subscribe(event => {
+        const snack = this.snackbar.open(`An error occurred that we cannot recover from:\n${event.reason}\n\n`, 'Reload');
+        const sub = snack.onAction().subscribe(() => {
+          window.location.reload();
+          sub.unsubscribe();
+        });
+      });
     }
   }
 
