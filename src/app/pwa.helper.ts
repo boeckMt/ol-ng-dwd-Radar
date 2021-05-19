@@ -22,6 +22,7 @@ export class PwaHelper {
     if (this.swUpdate.isEnabled) {
       console.log('check swUpdate', this.swUpdate);
       this.swUpdate.available.subscribe((event) => {
+        console.log('swUpdate.available', event);
         // check Update
         window.localStorage.setItem(currentVersionKey, event.current.hash);
         window.localStorage.setItem(newVersionKey, event.available.hash);
@@ -41,16 +42,25 @@ export class PwaHelper {
           });
         });
       });
-      this.swUpdate.checkForUpdate();
+
+      this.swUpdate.activated.subscribe((event) => {
+        console.log('swUpdate.activated', event);
+        console.log('activated: current version is', event.current);
+        console.log('activated: previous version is', event.previous);
+      });
+
 
       // Handling an unrecoverable state of versions
       this.swUpdate.unrecoverable.subscribe(event => {
+        console.log('swUpdate.unrecoverable', event);
         const snack = this.snackbar.open(`An error occurred that we cannot recover from:\n${event.reason}\n\n`, 'Reload');
         const sub = snack.onAction().subscribe(() => {
           window.location.reload();
           sub.unsubscribe();
         });
       });
+
+      this.swUpdate.checkForUpdate();
     }
   }
 
