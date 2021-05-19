@@ -34,5 +34,11 @@ https://github.com/angular/angular-cli/issues/9395
 
 ## PWA
 - check for new version of app(service-worker) //swUpdate.available.subscribe
-- cache files of app and requested osm tiles with ngsw-config.json //with globs patern 
+- cache files of app and requested osm tiles with ngsw-config.json //with globs patern
+
+
+## Update
+- `ng update`
+- `ng update @angular/cli --from x --to y --migrate-only`
+- `npm outdated -l`
 
