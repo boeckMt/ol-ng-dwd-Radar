@@ -55,7 +55,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   @HostBinding("class.open-nav") navOpen = false;
 
   /** for debugging */
-  useCapsFromStore = true;
+  useCapsFromStore = false;
 
   swVersion = {
     current: null,
