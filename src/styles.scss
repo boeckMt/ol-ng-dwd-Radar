@@ -25,3 +25,11 @@ body {
     overflow-y: scroll;
   }
 }
+
+
+.geo-locate-ctrl {
+  pointer-events: auto;
+  cursor: pointer;
+  bottom: 0.25em;
+  left: 0.25em;
+}

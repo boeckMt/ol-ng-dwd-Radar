@@ -50,12 +50,14 @@ export function getLocation(map: Map, EPSGCODE) {
       if (checkIfLocationInGermany()) {
         map.setView(new View({
           center: transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', EPSGCODE),
-          zoom: 7
+          zoom: 18
         }));
       }
     });
   }
 }
+
+
 
 // TODO
 export function checkIfLocationInGermany() {

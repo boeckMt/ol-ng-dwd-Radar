@@ -12,6 +12,11 @@ import XYZ from 'ol/source/XYZ';
 import LayerGroup from 'ol/layer/Group';
 import TileWMS from 'ol/source/TileWMS';
 import Attribution from 'ol/control/Attribution';
+import Rotate from 'ol/control/Rotate';
+import {
+  DragRotateAndZoom,
+  defaults as defaultInteractions
+} from 'ol/interaction'
 
 
 import { currentVersionKey, newVersionKey, PwaHelper } from './pwa.helper';
@@ -19,13 +24,16 @@ import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours } from './utills';
-import { findLayerRecursive, getTileGrid } from './map.utills';
+import { findLayerRecursive, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
+import { ThemePalette } from '@angular/material/core';
+import { ProgressBarMode } from '@angular/material/progress-bar';
+import { ButtonControl } from './ol-custom-control';
 
 
 export interface IProgress {
-  mode: 'indeterminate' | '';
-  color: 'primary' | 'accent';
+  mode: ProgressBarMode;
+  color: ThemePalette
 }
 
 export interface IweatherlayerItem {
@@ -45,6 +53,9 @@ export interface IweatherlayerItem {
 export class AppComponent implements OnInit, AfterViewInit {
   @HostBinding('class') class = 'app-container';
   @HostBinding("class.open-nav") navOpen = false;
+
+  /** for debugging */
+  useCapsFromStore = true;
 
   swVersion = {
     current: null,
@@ -218,9 +229,21 @@ export class AppComponent implements OnInit, AfterViewInit {
         baselayers,
         overlays
       ],
+      interactions: defaultInteractions().extend([new DragRotateAndZoom()]),
       controls: [new Attribution({
         collapsed: false
-      })],
+      }),
+      new Rotate(),
+      new ButtonControl({
+        innerHTML: `<span class="material-icons">my_location</span>`,
+        className: 'geo-locate-ctrl',
+        event: {
+          type: 'click', fn: () => {
+            getLocation(this.map, this.EPSGCODE);
+          }
+        }
+      })
+      ],
       target: 'map'
     });
 
@@ -260,30 +283,51 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   async getWmsCaps() {
     this.progressBar.mode = 'indeterminate';
-    const cpasLoadTime = window.localStorage.getItem('cpasLoadTime');
-    if (!checkIf5MinutesLater(DateTime.fromISO(cpasLoadTime)) && this.capabilities) {
-      this.progressBar.color = 'accent';
+    const localCaps = window.localStorage.getItem('lastLocalCpas');
+
+    // for debugging
+    if (this.useCapsFromStore && localCaps) {
+      if (!this.capabilities) {
+        this.capabilities = JSON.parse(localCaps) as Icapabilities;
+      }
+
+      this.progressBar.color = 'warn';
       // console.log('cache caps', this.capabilities);
       return new Promise<Icapabilities>((resolve, reject) => {
         setTimeout(() => {
           this.progressBar.mode = null;
           resolve(this.capabilities);
-        }, 500);
+        }, 1000);
       });
+
     } else {
-      this.progressBar.color = 'primary';
-      const parser = new WMSCapabilities();
-      return fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then(async response => {
-        if (response.ok) {
-          window.localStorage.setItem('cpasLoadTime', DateTime.local().toISO());
-          const data = await response.text();
-          // console.log('fresh caps');
-          this.progressBar.mode = null;
-          return parser.read(data) as Icapabilities;
-        } else {
-          throw new Error(`status code: ${response.status}`);
-        }
-      });
+      const cpasLoadTime = window.localStorage.getItem('cpasLoadTime');
+      if (!checkIf5MinutesLater(DateTime.fromISO(cpasLoadTime)) && this.capabilities) {
+        this.progressBar.color = 'accent';
+        // console.log('cache caps', this.capabilities);
+        return new Promise<Icapabilities>((resolve, reject) => {
+          setTimeout(() => {
+            this.progressBar.mode = null;
+            resolve(this.capabilities);
+          }, 500);
+        });
+      } else {
+        this.progressBar.color = 'primary';
+        const parser = new WMSCapabilities();
+        return fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then(async response => {
+          if (response.ok) {
+            window.localStorage.setItem('cpasLoadTime', DateTime.local().toISO());
+            const data = await response.text();
+            // console.log('fresh caps');
+            this.progressBar.mode = null;
+            const caps = parser.read(data) as Icapabilities;
+            window.localStorage.setItem('lastLocalCpas', JSON.stringify(caps));
+            return caps;
+          } else {
+            throw new Error(`status code: ${response.status}`);
+          }
+        });
+      }
     }
   }
 
