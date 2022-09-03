@@ -24,7 +24,7 @@ import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours } from './utills';
-import { findLayerRecursive, getLocation, getTileGrid } from './map.utills';
+import { addLocationLayer, findLayerRecursive, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { ProgressBarMode } from '@angular/material/progress-bar';
@@ -103,7 +103,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
 
   timeSource: TileWMS;
-  layer: TileLayer;
+  layer: TileLayer<TileWMS>;
   /** EPSG:3857 */
   fallbackExtent = [183082.1073087257, 5345076.652029778, 2017570.7861529556, 7786169.587345167];
   /** Muenchen */
@@ -112,6 +112,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     center: [1288323.189210665, 6134720.493257317],
     zoom: 9
   }
+
+  currentLocation = {
+    isLocated: false,
+    layer: null
+  }
+
   // preloadSource: TileWMS;
   // prelayer: TileLayer;
 
@@ -242,7 +248,26 @@ export class AppComponent implements OnInit, AfterViewInit {
         className: 'geo-locate-ctrl',
         event: {
           type: 'click', fn: () => {
-            getLocation(this.map, this.EPSGCODE);
+            console.log(this);
+            if (!this.currentLocation.isLocated) {
+              getLocation(this.EPSGCODE, (coordinates => {
+                if (coordinates) {
+                  this.currentLocation.layer = addLocationLayer(this.map, coordinates);
+                  // this.view.setCenter(coordinates);
+                  // this.view.setZoom(18);
+                }
+              }));
+              this.currentLocation.isLocated = true;
+              return true;
+            } else {
+              // this.view.setZoom(this.currentLocation.lastZoom);
+              if (this.currentLocation.layer) {
+                this.map.removeLayer(this.currentLocation.layer);
+              }
+              this.currentLocation.isLocated = false;
+              return true;
+            }
+
           }
         }
       })

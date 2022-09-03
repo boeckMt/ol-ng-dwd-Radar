@@ -5,7 +5,7 @@ import { removeNode } from 'ol/dom';
 
 interface OptionsEvent {
   type: keyof WindowEventMap;
-  fn: () => void;
+  fn: () => boolean;
 };
 export interface ButtonControlOptions {
   className?: string;
