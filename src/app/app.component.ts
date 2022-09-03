@@ -76,7 +76,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_FF', viewValue: 'Windgeschwindigkeit' },
     { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
   ];
-  public weatherlayername = new FormControl(this.weatherlayers[0]?.value ?? null);
+  public weatherlayername = new FormControl<string>(this.weatherlayers[0]?.value ?? null);
 
   public datesString: string[];
   public slidervalue: string;
@@ -139,7 +139,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   updateMapSize() {
     if (this.map) {
-      console.log('update size')
+      // console.log('update size')
       setTimeout(() => {
         this.map.updateSize();
       }, 200);
