@@ -5,8 +5,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "rm -rf docs/ && ng build --prod",
-    "buildGP": "rm -rf docs/ && ng build --prod --output-path docs --aot --vendor-chunk --common-chunk --delete-output-path --build-optimizer --base-href /ol-ng-dwd-Radar/",
+    "build": "rm -rf docs/ && ng build --configuration=production",
+    "buildGP": "rm -rf docs/ && ng build --configuration=production --output-path docs --aot --vendor-chunk --common-chunk --delete-output-path --build-optimizer --base-href /ol-ng-dwd-Radar/",
     "postbuildGP": "rm -rf tmp/ol-ng-dwd-Radar/* && cp -R docs/* tmp/ol-ng-dwd-Radar/",
     "serveLocalPwa": "http-server -p 8080 -c-1 ./tmp",
     "test": "ng test",
