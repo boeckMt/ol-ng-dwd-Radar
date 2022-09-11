@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1621466388117,
+  "timestamp": 1662910414390,
   "index": "/ol-ng-dwd-Radar/index.html",
   "assetGroups": [
     {
@@ -10,7 +10,16 @@
       "cacheQueryOptions": {
         "ignoreVary": true
       },
-      "urls": [],
+      "urls": [
+        "/ol-ng-dwd-Radar/favicon.ico",
+        "/ol-ng-dwd-Radar/index.html",
+        "/ol-ng-dwd-Radar/main.f8d1cdea7844a87b.js",
+        "/ol-ng-dwd-Radar/manifest.webmanifest",
+        "/ol-ng-dwd-Radar/polyfills.19598378d3b243a5.js",
+        "/ol-ng-dwd-Radar/runtime.9779140a384784a5.js",
+        "/ol-ng-dwd-Radar/styles.9946b1ff2b92c3af.css",
+        "/ol-ng-dwd-Radar/vendor.182bcd56df5c104b.js"
+      ],
       "patterns": []
     },
     {
@@ -20,7 +29,20 @@
       "cacheQueryOptions": {
         "ignoreVary": true
       },
-      "urls": [],
+      "urls": [
+        "/ol-ng-dwd-Radar/MaterialIcons-Regular.196fa4a92dd6fa73.ttf",
+        "/ol-ng-dwd-Radar/MaterialIcons-Regular.1e50f5c2ffa6aba4.eot",
+        "/ol-ng-dwd-Radar/MaterialIcons-Regular.7ea2023eeca07427.woff2",
+        "/ol-ng-dwd-Radar/MaterialIcons-Regular.db852539204b1a34.woff",
+        "/ol-ng-dwd-Radar/assets/icons/icon-128x128.png",
+        "/ol-ng-dwd-Radar/assets/icons/icon-144x144.png",
+        "/ol-ng-dwd-Radar/assets/icons/icon-152x152.png",
+        "/ol-ng-dwd-Radar/assets/icons/icon-192x192.png",
+        "/ol-ng-dwd-Radar/assets/icons/icon-384x384.png",
+        "/ol-ng-dwd-Radar/assets/icons/icon-512x512.png",
+        "/ol-ng-dwd-Radar/assets/icons/icon-72x72.png",
+        "/ol-ng-dwd-Radar/assets/icons/icon-96x96.png"
+      ],
       "patterns": []
     },
     {
@@ -50,7 +72,28 @@
       "version": 1
     }
   ],
-  "hashTable": {},
+  "hashTable": {
+    "/ol-ng-dwd-Radar/MaterialIcons-Regular.196fa4a92dd6fa73.ttf": "fc05de31234e0090f7ddc28ce1b23af4026cb1da",
+    "/ol-ng-dwd-Radar/MaterialIcons-Regular.1e50f5c2ffa6aba4.eot": "26fb8cecb5512223277b4d290a24492a0f09ede1",
+    "/ol-ng-dwd-Radar/MaterialIcons-Regular.7ea2023eeca07427.woff2": "09963592e8c953cc7e14e3fb0a5b05d5042e8435",
+    "/ol-ng-dwd-Radar/MaterialIcons-Regular.db852539204b1a34.woff": "c6c953c2ccb2ca9abb21db8dbf473b5a435f0082",
+    "/ol-ng-dwd-Radar/assets/icons/icon-128x128.png": "51d84148c264b5b59291f38c5d8bd8a8515d1d06",
+    "/ol-ng-dwd-Radar/assets/icons/icon-144x144.png": "8cb88fbd543ad841db476014572c81edfeb79ba7",
+    "/ol-ng-dwd-Radar/assets/icons/icon-152x152.png": "5c65de266aa90dbffab456b7c220d88ef56547db",
+    "/ol-ng-dwd-Radar/assets/icons/icon-192x192.png": "5be0a6968403548048ff383d6411fba12b85e832",
+    "/ol-ng-dwd-Radar/assets/icons/icon-384x384.png": "8cee4cdc25726af58e03c448cb3a2c32362e7d9c",
+    "/ol-ng-dwd-Radar/assets/icons/icon-512x512.png": "68f5f27e982e8df5458def7dba78c1b4ab1708c0",
+    "/ol-ng-dwd-Radar/assets/icons/icon-72x72.png": "6176ff6fce7c01c6d4da4073f87a47065042b0de",
+    "/ol-ng-dwd-Radar/assets/icons/icon-96x96.png": "69deeaf257127d6560dc95d587a2414af8cbc846",
+    "/ol-ng-dwd-Radar/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
+    "/ol-ng-dwd-Radar/index.html": "b34c6889b9de80633d4813b8e9cf88a214f16fcd",
+    "/ol-ng-dwd-Radar/main.f8d1cdea7844a87b.js": "0905be946fec8a21e97610dca635f03d826693b1",
+    "/ol-ng-dwd-Radar/manifest.webmanifest": "ba8ed8f62fc74b51be40eeedf06f237e2be03de4",
+    "/ol-ng-dwd-Radar/polyfills.19598378d3b243a5.js": "e36c5d61c3652a5a8e3e7cf9dc94e691baf7a6a8",
+    "/ol-ng-dwd-Radar/runtime.9779140a384784a5.js": "74d94fe48ecd22f0bcf2eb753281d11874c8aa14",
+    "/ol-ng-dwd-Radar/styles.9946b1ff2b92c3af.css": "f437f5acba623839a8c5a89bf94edab949d6bdae",
+    "/ol-ng-dwd-Radar/vendor.182bcd56df5c104b.js": "b9645f701b9db76b38d04b7da5240afac7f23907"
+  },
   "navigationUrls": [
     {
       "positive": true,

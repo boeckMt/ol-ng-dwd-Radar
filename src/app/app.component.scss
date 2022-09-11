@@ -1,4 +1,4 @@
-@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
 @import "~material-design-icons/iconfont/material-icons.css";
 @import '~ol/ol';
 
@@ -13,7 +13,7 @@ $bottom-toolbar-height-mobile: 112px;
 
 
 .mat-toolbar {
-  background: #004D40;
+  background: rgb(0, 77, 64);
   color: rgba(255, 255, 255, 0.9);
 }
 
