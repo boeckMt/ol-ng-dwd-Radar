@@ -2,8 +2,7 @@ import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit, OnDes
 
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
-import { MatLegacySlider as MatSlider } from '@angular/material/legacy-slider';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import View from 'ol/View';
 import Map from 'ol/Map';
@@ -184,8 +183,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.refresh();
   }
 
-  public setLayerOpacity(slider: MatSlider) {
-    this.layer.setOpacity(slider.value);
+  public setLayerOpacity(event) {
+    this.layer.setOpacity(parseFloat(event.target.value));
   }
 
   public getLayerOpacity(): number {

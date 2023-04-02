@@ -18,8 +18,6 @@ export class TimeSliderComponent implements OnChanges {
   @Input() startTime?: string;
   @Output('dateChange') change: EventEmitter<IdateChange> = new EventEmitter();
 
-  public tickInterval = 1;
-  public thumbLabel = false;
   public sValue = 0;
   public sMin = 0;
   public sMax: number;

@@ -17,11 +17,6 @@ $bottom-toolbar-height-mobile: 112px;
   color: rgba(255, 255, 255, 0.9);
 }
 
-.mat-accent .mat-slider-thumb,
-.mat-accent .mat-slider-thumb-label,
-.mat-accent .mat-slider-track-fill {
-  background-color: #EF6C00 !important
-}
 
 .mat-progress-bar.mat-debug {
   .mat-progress-bar-background {
@@ -121,7 +116,7 @@ main {
   }
 
   .mat-icon {
-    color: #EF6C00;
+    color: var(--mdc-slider-handle-color, #3f51b5);
     cursor: pointer;
   }
 
