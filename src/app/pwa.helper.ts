@@ -90,4 +90,13 @@ export class PwaHelper {
     window.removeEventListener('beforeinstallprompt', this.beforeinstallprompt);
     return false;
   }
+
+  shareLink(link: string) {
+    if (navigator.share) {
+      navigator.share({
+        title: 'ol-ng-dwd-Radar - Link',
+        url: link,
+      }).then(() => console.log('Successful share')).catch((error) => console.log('Error sharing', error));
+    }
+  }
 }

@@ -24,6 +24,8 @@
       <span class="title">
         {{ currentState.time | date: 'dd/M/yyyy - HH:mm:ss'}}
       </span>
+      <span class="share">
+        <mat-icon title="share" (click)="shareLink()">share</mat-icon>
       </span>
     </mat-toolbar-row>
   </mat-toolbar>

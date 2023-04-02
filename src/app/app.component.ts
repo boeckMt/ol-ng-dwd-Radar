@@ -156,6 +156,16 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  public shareLink() {
+    const link = getShareLink({
+      time: this.currentState.time,
+      zoom: this.currentState.zoom.toFixed(3),
+      center: this.currentState.center.map(i => i.toFixed(3)).join(','),
+      layer: this.weatherlayername.value
+    });
+    this.pwaHelper.shareLink(link);
+  }
+
   updateMapSize() {
     if (this.map) {
       // console.log('update size')

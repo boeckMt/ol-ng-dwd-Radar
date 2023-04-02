@@ -276,3 +276,24 @@ export function getSearchParamsFronString(url: string) {
   }
   return query;
 }
+
+
+export function getShareLink(params: { time?: string, zoom?: string, center?: string, layer?: string }) {
+  const { origin, pathname, search } = getLocation();
+
+  const query = getSearchParamsFronString(search);
+  Object.keys(params).map(key => {
+    if (params[key]) {
+      query.set(key, params[key]);
+    } else {
+      query.delete(key);
+    }
+  });
+
+  const newSearchString = decodeURIComponent(`${query}`);
+  let newurl = `${origin}${pathname}`;
+  if (newSearchString.length) {
+    newurl = `${newurl}?${newSearchString}`;
+  }
+  return newurl;
+}
