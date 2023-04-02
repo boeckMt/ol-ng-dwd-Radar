@@ -216,3 +216,63 @@ export function formatDate(date: string, format: string, toUtc = false) {
 }
 
 
+export function getLocation(url = window.location.href) {
+  // check for http(s)
+  if (url.indexOf('http') === -1) {
+    if (url.charAt(0) !== '/') {
+      url = `/${url}`;
+    }
+    url = new URL(url, window.location.origin).toString();
+  }
+
+  let pathname = window.location.pathname;
+  let hashPath = '';
+  let search = window.location.search;
+  let hash = window.location.hash;
+  let hashRouting: string | boolean = false;
+
+  const pathHashpathSearchHash = url.substring(window.location.origin.length);
+  const pathnameAndHashroute = pathHashpathSearchHash.split('/#/');
+  /** HashRouting */
+  if (pathnameAndHashroute.length === 2) {
+    hashRouting = '/#';
+    pathname = pathnameAndHashroute[0];
+
+    const hashpathSearchHash = `/${pathnameAndHashroute[1]}`;
+    const hasHash = decodeURIComponent(hashpathSearchHash).split('#');
+
+    if (hasHash[1]) {
+      const pathSearch = hasHash[0].split('?');
+      search = (pathSearch[1]) ? `?${pathSearch[1]}` : '';
+      hashPath = pathSearch[0];
+      hash = `#${hasHash[1]}`;
+    } else {
+      const pathSearch = hashpathSearchHash.split('?');
+      search = (pathSearch[1]) ? `?${pathSearch[1]}` : '';
+      hashPath = pathSearch[0];
+      hash = '';
+    }
+  }
+
+  return {
+    url,
+    origin: location.origin,
+    pathname,
+    hashPath,
+    search,
+    hash,
+    hashRouting
+  }
+}
+
+/**
+ * @param url - ...?key=value&...
+ */
+export function getSearchParamsFronString(url: string) {
+  const hasSearch = url.split('?');
+  let query = new URLSearchParams();
+  if (hasSearch[1]) {
+    query = new URLSearchParams(hasSearch[1]);
+  }
+  return query;
+}

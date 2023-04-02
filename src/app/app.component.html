@@ -18,11 +18,12 @@
 <section class="map-time-control">
   <mat-toolbar>
     <mat-toolbar-row>
-      <app-time-slider [dates]="datesString" (dateChange)="sliderOnChange($event)"></app-time-slider>
+      <app-time-slider [dates]="datesString" [startTime]="startState.time" (dateChange)="sliderOnChange($event)"></app-time-slider>
     </mat-toolbar-row>
     <mat-toolbar-row>
       <span class="title">
-        {{ slidervalue | date: 'dd/M/yyyy - HH:mm:ss'}}
+        {{ currentState.time | date: 'dd/M/yyyy - HH:mm:ss'}}
+      </span>
       </span>
     </mat-toolbar-row>
   </mat-toolbar>

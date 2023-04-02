@@ -15,6 +15,7 @@ export class TimeSliderComponent implements OnChanges {
 
   /** ISO string dates UTC */
   @Input() dates: string[];
+  @Input() startTime?: string;
   @Output('dateChange') change: EventEmitter<IdateChange> = new EventEmitter();
 
   public tickInterval = 1;
@@ -96,6 +97,14 @@ export class TimeSliderComponent implements OnChanges {
       } else {
         this.dValue = this.dates[this.sMax];
         this.sValue = this.sMax;
+      }
+
+      if (this.startTime) {
+        const startIndex = this.dates.indexOf(this.startTime);
+        if (startIndex) {
+          this.dValue = this.dates[startIndex];
+          this.sValue = startIndex;
+        }
       }
 
       this.sliderOnChange();
