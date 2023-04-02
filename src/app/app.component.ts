@@ -69,11 +69,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public weatherlayers: IweatherlayerItem[] = [
     { value: 'Fachlayer.Wetter.Radar.WN-Produkt', viewValue: 'Radarvorhersage', startDate: addHours(DateTime.local().toISO(), 2, '-') },
-
-    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.WAWFOR_ieu_temperature_2m', viewValue: 'WAWFOR_ieu_temperature_2m' },
-    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.WAWFOR_ieu_qff', viewValue: 'WAWFOR_ieu_qff' },
-
-
+    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Icon-eu_wawforeu_reg00625_fd_sl_T2M', viewValue: 'Temperature 2m WAWFOR ICON-EU' },
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_FF', viewValue: 'Windgeschwindigkeit' },
@@ -385,6 +381,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   findLayerInCaps(caps: Icapabilities, refresh = false) {
     // this.snackbar.open(`caps loaded`, 'Close');
+    console.log(caps)
     const allLayers = caps?.Capability?.Layer ?? null;
     this.dwdinfo.title = caps?.Service?.Title ?? 'NoTitle';
     this.dwdinfo.link = caps?.Service?.AccessConstraints ?? null;
