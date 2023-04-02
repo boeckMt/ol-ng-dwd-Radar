@@ -2,8 +2,8 @@ import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit, OnDes
 
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
-import { MatSlider } from '@angular/material/slider';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySlider as MatSlider } from '@angular/material/legacy-slider';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 
 import View from 'ol/View';
 import Map from 'ol/Map';
@@ -27,7 +27,7 @@ import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, 
 import { addLocationLayer, findLayerRecursive, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
-import { ProgressBarMode } from '@angular/material/progress-bar';
+import { LegacyProgressBarMode as ProgressBarMode } from '@angular/material/legacy-progress-bar';
 import { ButtonControl } from './ol-custom-control';
 import { environment } from './../environments/environment';
 import { EventsKey } from 'ol/events';
