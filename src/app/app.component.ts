@@ -240,7 +240,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       preload: Infinity,
       source: new XYZ({
         // url: `https://tile.osmand.net/hd/{z}/{x}/{y}.png`
-        url: `https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png`
+        url: `https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png`,
+        attributions: `&#169; <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a> & contributors`
       })
     });
 
