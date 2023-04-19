@@ -67,12 +67,23 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   mapSubs: EventsKey[] = [];
 
   public weatherlayers: IweatherlayerItem[] = [
+    // https://www.dwd.de/DE/leistungen/radarprodukte/radarprodukte.html
+    // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_wn.html
     { value: 'Fachlayer.Wetter.Radar.WN-Produkt', viewValue: 'Radarvorhersage', startDate: addHours(DateTime.local().toISO(), 2, '-') },
+    { value: 'Fachlayer.Wetter.Radar.RADOLAN-RY', viewValue: 'Qualitätsgeprüfte Radardaten (RY)' },
+    // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_rv.html
+    { value: 'Fachlayer.Wetter.Radar.RV-Produkt', viewValue: 'Akkumulierte Niederschlagsmenge' }, //  akkumulierten Niederschlagsmenge
+
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Icon-eu_wawforeu_reg00625_fd_sl_T2M', viewValue: 'Temperature 2m WAWFOR ICON-EU' },
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_FF', viewValue: 'Windgeschwindigkeit' },
-    { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
+    { value: 'Fachlayer.Wetter.Satellit.Satellite_meteosat_1km_euat_rgb_day_hrv_and_night_ir108_3h', viewValue: 'Satellitenbild METEOSAT' },
+    { value: 'Fachlayer.Wetter.Satellit.Satellite_worldmosaic_3km_world_ir108_3h', viewValue: 'Satellitenbild Weltkomposit IR' },
+
+    { value: 'Fachlayer.Wetter.Analysen.NCEW_EU', viewValue: 'Voraussichtliche Blitzeinschläge' },
+    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Analyse', viewValue: 'Autowarn_Analyse' },
+    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Vorhersage', viewValue: 'Autowarn_Vorhersage' }
   ];
   public weatherlayername = new FormControl<string>(this.weatherlayers[0]?.value ?? null);
   public datesString: string[];
