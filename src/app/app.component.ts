@@ -391,7 +391,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   findLayerInCaps(caps: Icapabilities, refresh = false) {
     // this.snackbar.open(`caps loaded`, 'Close');
-    console.log(caps)
+    // console.log(caps)
     const allLayers = caps?.Capability?.Layer ?? null;
     this.dwdinfo.title = caps?.Service?.Title ?? 'NoTitle';
     this.dwdinfo.link = caps?.Service?.AccessConstraints ?? null;
@@ -429,11 +429,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       // this.datesString = RadarLayer.Dimension[0].values.split(',');
       const layerConfig = this.weatherlayers.find(l => l.value === this.weatherlayername.value);
       // console.log(layerConfig)
-      const allDates = checkDimensionTime(layer.Dimension[0]);
-      if (layerConfig && (layerConfig.startDate || layerConfig.endDate)) {
-        this.datesString = getDatesBetween(allDates, layerConfig.startDate, layerConfig.endDate);
-      } else {
-        this.datesString = allDates;
+      if (layer.Dimension) {
+        const allDates = checkDimensionTime(layer.Dimension[0]);
+        if (layerConfig && (layerConfig.startDate || layerConfig.endDate)) {
+          this.datesString = getDatesBetween(allDates, layerConfig.startDate, layerConfig.endDate);
+        } else {
+          this.datesString = allDates;
+        }
+      }else{
+        this.snackbar.open(`Layer without Time Dimension`, 'Close');
       }
 
       // here timeslider is finds the start date -> findClosestDate()
