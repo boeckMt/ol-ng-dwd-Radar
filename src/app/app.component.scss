@@ -112,11 +112,12 @@ main {
   }
 
   app-time-slider {
+    position: relative;
     width: 100%;
   }
 
   .mat-icon {
-    color: var(--mdc-slider-handle-color, #3f51b5);
+    color: rgb(235, 156, 70);
     cursor: pointer;
   }
 
