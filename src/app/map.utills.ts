@@ -73,7 +73,7 @@ export function addLocationLayer(map: Map, coordinates: Coordinate) {
         image: new CircleStyle({
           radius: 6,
           fill: new Fill({
-            color: 'rgba(0, 77, 64, 0.8)',
+            color: 'rgba(235, 156, 70, 0.8)',
           })
         })
       })
