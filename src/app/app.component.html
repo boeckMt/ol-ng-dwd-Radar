@@ -25,9 +25,9 @@
       <span class="title">
         {{ currentState.time | date: 'dd/M/yyyy - HH:mm:ss'}}
       </span>
-      <span class="share" title="share current map view">
-        <mat-icon title="share" (click)="shareLink()">share</mat-icon>
-      </span>
+      <button mat-icon-button aria-label="share map" title="share current map view" (click)="shareLink()">
+        <mat-icon >share</mat-icon>
+      </button>
     </mat-toolbar-row>
   </mat-toolbar>
 </section>
