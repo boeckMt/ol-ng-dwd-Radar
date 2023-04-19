@@ -1,8 +1,7 @@
-import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit, OnDestroy } from '@angular/core';
 
 import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
-import { MatSlider } from '@angular/material/slider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import View from 'ol/View';
@@ -23,13 +22,15 @@ import { currentVersionKey, newVersionKey, PwaHelper } from './pwa.helper';
 import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
-import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours } from './utills';
+import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours, getLocation as getUrlLocation, getSearchParamsFronString, getShareLink } from './utills';
 import { addLocationLayer, findLayerRecursive, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
-import { ProgressBarMode } from '@angular/material/progress-bar';
+import { LegacyProgressBarMode as ProgressBarMode } from '@angular/material/legacy-progress-bar';
 import { ButtonControl } from './ol-custom-control';
 import { environment } from './../environments/environment';
+import { EventsKey } from 'ol/events';
+import { unByKey } from 'ol/Observable';
 
 
 export interface IProgress {
@@ -51,7 +52,7 @@ export interface IweatherlayerItem {
   styleUrls: ['app.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostBinding('class') class = 'app-container';
   @HostBinding("class.open-nav") navOpen = false;
 
@@ -63,23 +64,29 @@ export class AppComponent implements OnInit, AfterViewInit {
     available: null
   };
 
+  mapSubs: EventsKey[] = [];
+
   public weatherlayers: IweatherlayerItem[] = [
-    // { value: 'Fachlayer.Wetter.Radar.FX-Produkt', viewValue: 'Radarvorhersage' },
+    // https://www.dwd.de/DE/leistungen/radarprodukte/radarprodukte.html
+    // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_wn.html
     { value: 'Fachlayer.Wetter.Radar.WN-Produkt', viewValue: 'Radarvorhersage', startDate: addHours(DateTime.local().toISO(), 2, '-') },
+    { value: 'Fachlayer.Wetter.Radar.RADOLAN-RY', viewValue: 'Qualitätsgeprüfte Radardaten (RY)' },
+    // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_rv.html
+    { value: 'Fachlayer.Wetter.Radar.RV-Produkt', viewValue: 'Akkumulierte Niederschlagsmenge' }, //  akkumulierten Niederschlagsmenge
 
-    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.WAWFOR_ieu_temperature_2m', viewValue: 'WAWFOR_ieu_temperature_2m' },
-    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.WAWFOR_ieu_qff', viewValue: 'WAWFOR_ieu_qff' },
-
-
+    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Icon-eu_wawforeu_reg00625_fd_sl_T2M', viewValue: 'Temperature 2m WAWFOR ICON-EU' },
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_FF', viewValue: 'Windgeschwindigkeit' },
-    { value: 'Fachlayer.Wetter.Satellit.SAT_EU_central_RGB_cloud', viewValue: 'Satellitenbild' }
+    { value: 'Fachlayer.Wetter.Satellit.Satellite_meteosat_1km_euat_rgb_day_hrv_and_night_ir108_3h', viewValue: 'Satellitenbild METEOSAT' },
+    { value: 'Fachlayer.Wetter.Satellit.Satellite_worldmosaic_3km_world_ir108_3h', viewValue: 'Satellitenbild Weltkomposit IR' },
+
+    { value: 'Fachlayer.Wetter.Analysen.NCEW_EU', viewValue: 'Voraussichtliche Blitzeinschläge' },
+    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Analyse', viewValue: 'Autowarn_Analyse' },
+    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Vorhersage', viewValue: 'Autowarn_Vorhersage' }
   ];
   public weatherlayername = new FormControl<string>(this.weatherlayers[0]?.value ?? null);
-
   public datesString: string[];
-  public slidervalue: string;
 
   public legendurl = '';
   public progressBar: IProgress = {
@@ -107,10 +114,12 @@ export class AppComponent implements OnInit, AfterViewInit {
   /** EPSG:3857 */
   fallbackExtent = [183082.1073087257, 5345076.652029778, 2017570.7861529556, 7786169.587345167];
   /** Muenchen */
-  startLocation = {
+  public startState = {
     title: 'München',
     center: [1288323.189210665, 6134720.493257317],
-    zoom: 9
+    zoom: 9,
+    time: null,
+    layer: this.weatherlayers[0]?.viewValue
   }
 
   currentLocation = {
@@ -118,13 +127,23 @@ export class AppComponent implements OnInit, AfterViewInit {
     layer: null
   }
 
-  // preloadSource: TileWMS;
-  // prelayer: TileLayer;
+  public currentState: {
+    zoom: number,
+    center: number[],
+    time: string,
+    layer: string
+  };
 
   constructor(private elRef: ElementRef, private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
     if (environment.production) {
       this.useCapsFromStore = false;
     }
+    this.currentState = {
+      zoom: this.startState.zoom,
+      center: this.startState.center,
+      time: this.startState.time,
+      layer: this.startState.layer
+    };
   }
 
   public formatDate = formatDate;
@@ -138,9 +157,19 @@ export class AppComponent implements OnInit, AfterViewInit {
       if (caps && 'version' in caps) {
         this.capabilities = caps;
         // console.log(caps)
-        this.findLayerInCaps(this.capabilities);
+        this.findLayerInCaps(this.capabilities, true);
       }
     });
+  }
+
+  public shareLink() {
+    const link = getShareLink({
+      time: this.currentState.time,
+      zoom: this.currentState.zoom.toFixed(3),
+      center: this.currentState.center.map(i => i.toFixed(3)).join(','),
+      layer: this.weatherlayername.value
+    });
+    this.pwaHelper.shareLink(link);
   }
 
   updateMapSize() {
@@ -165,8 +194,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.refresh();
   }
 
-  public setLayerOpacity(slider: MatSlider) {
-    this.layer.setOpacity(slider.value);
+  public setLayerOpacity(event) {
+    this.layer.setOpacity(parseFloat(event.target.value));
   }
 
   public getLayerOpacity(): number {
@@ -181,16 +210,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     if (this.timeSource && this.timeSource.updateParams) {
 
       const time = new Date(value.now);
-
-      // console.log(time.toISOString())
-      this.slidervalue = time.toISOString();
+      this.currentState.time = time.toISOString();
       this.timeSource.updateParams({ TIME: value.now });
 
-      if (value.next) {
-        const preloadtime = new Date(value.next);
-        // console.log(preloadtime.toISOString())
-        // this.preloadSource.updateParams({ 'TIME': value.next });
-      }
     }
   }
 
@@ -208,10 +230,14 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.updateMapSize();
   }
 
+  ngOnDestroy(): void {
+    this.mapSubs.forEach(s => unByKey(s));
+  }
+
   initMap() {
     this.view = new View({
-      center: this.startLocation.center,
-      zoom: this.startLocation.zoom,
+      center: this.startState.center,
+      zoom: this.startState.zoom,
       projection: this.EPSGCODE
     });
 
@@ -220,7 +246,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       preload: Infinity,
       source: new XYZ({
         // url: `https://tile.osmand.net/hd/{z}/{x}/{y}.png`
-        url: `https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png`
+        url: `https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png`,
+        attributions: `&#169; <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a> & contributors`
       })
     });
 
@@ -248,7 +275,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         className: 'geo-locate-ctrl',
         event: {
           type: 'click', fn: () => {
-            console.log(this);
             if (!this.currentLocation.isLocated) {
               getLocation(this.EPSGCODE, (coordinates => {
                 if (coordinates) {
@@ -276,13 +302,13 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
 
 
-    this.map.on('click', (evt) => {
+    /* const mapOnClick = this.map.on('click', (evt) => {
       const zoom = this.map.getView().getZoom();
       const center = this.map.getView().getCenter();
       const extent = this.map.getView().calculateExtent(this.map.getSize());
       // console.log(zoom, center, extent);
     });
-
+    this.mapSubs.push(mapOnClick); */
 
     this.afterInit().then((caps) => {
       if (caps && 'version' in caps) {
@@ -363,11 +389,36 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
 
-  findLayerInCaps(caps: Icapabilities) {
+  findLayerInCaps(caps: Icapabilities, refresh = false) {
     // this.snackbar.open(`caps loaded`, 'Close');
+    // console.log(caps)
     const allLayers = caps?.Capability?.Layer ?? null;
     this.dwdinfo.title = caps?.Service?.Title ?? 'NoTitle';
     this.dwdinfo.link = caps?.Service?.AccessConstraints ?? null;
+    //--------------------------------
+    if (!refresh) {
+      const { search } = getUrlLocation();
+      const query = getSearchParamsFronString(search);
+      const layerViewValue = query.get('layer');
+      if (layerViewValue) {
+        this.weatherlayername.setValue(layerViewValue)
+      }
+
+      const time = query.get('time');
+      const center = query.get('center');
+      const zoom = query.get('zoom');
+
+      if (time) {
+        this.currentState.time = time;
+      }
+      if (center) {
+        this.currentState.center = center.split(',').map(i => parseFloat(i));
+      }
+      if (zoom) {
+        this.currentState.zoom = parseFloat(zoom);
+      }
+    }
+
     // -----------------------------------
     // this.weatherlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
     // console.log(this.weatherlayername.value);
@@ -378,14 +429,33 @@ export class AppComponent implements OnInit, AfterViewInit {
       // this.datesString = RadarLayer.Dimension[0].values.split(',');
       const layerConfig = this.weatherlayers.find(l => l.value === this.weatherlayername.value);
       // console.log(layerConfig)
-      const allDates = checkDimensionTime(layer.Dimension[0]);
-      if (layerConfig && (layerConfig.startDate || layerConfig.endDate)) {
-        this.datesString = getDatesBetween(allDates, layerConfig.startDate, layerConfig.endDate);
-      } else {
-        this.datesString = allDates;
+      if (layer.Dimension) {
+        const allDates = checkDimensionTime(layer.Dimension[0]);
+        if (layerConfig && (layerConfig.startDate || layerConfig.endDate)) {
+          this.datesString = getDatesBetween(allDates, layerConfig.startDate, layerConfig.endDate);
+        } else {
+          this.datesString = allDates;
+        }
+      }else{
+        this.snackbar.open(`Layer without Time Dimension`, 'Close');
       }
 
-      this.addLayer(layer, this.datesString);
+      // here timeslider is finds the start date -> findClosestDate()
+      this.startState.time = this.datesString[0];
+
+      if (!refresh) {
+        const startTimeIndex = this.datesString.indexOf(this.currentState.time);
+        if (startTimeIndex !== -1) {
+          // here timeslider uses this date if existing
+          this.startState.time = this.datesString[startTimeIndex];
+        }
+
+        if (this.currentState.time && startTimeIndex === -1) {
+          this.snackbar.open(`Time ${this.currentState.time} not found, the default time is used!`, 'Close');
+        }
+      }
+
+      this.addLayer(layer, this.startState.time, { zoom: this.currentState.zoom, center: this.currentState.center });
 
 
       // fix: ExpressionChangedAfterItHasBeenCheckedError
@@ -393,12 +463,12 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.legendurl = layer.Style[0].LegendURL[0].OnlineResource;
       // })
     } else {
-      console.log(caps);
+      // console.log(caps);
       this.snackbar.open(`Layer ${this.weatherlayername.value} not found!`, 'Close');
     }
   }
 
-  addLayer(Layer, times: string[]) {
+  addLayer(Layer, startTime: string, zoomCenter: { zoom?: number, center?: number[] }) {
     let layersextent = Layer.BoundingBox.filter(item => item.crs === this.EPSGCODE);
     if (!layersextent.length) {
       layersextent = this.fallbackExtent;
@@ -412,49 +482,12 @@ export class AppComponent implements OnInit, AfterViewInit {
         LAYERS: `dwd:${Layer.Name}`,
         VERSION: '1.3.0',
         CRS: this.view.getProjection(), // Layer.CRS[0]
-        TIME: times[0],
+        TIME: startTime,
         TILED: true
       },
       serverType: 'geoserver',
       tileGrid: getTileGrid(layersextent, this.EPSGCODE)
     });
-    /*
-        this.timeSource.on('tileloadstart', function() {
-          console.log('tileloadstart')
-        });
-
-        this.timeSource.on('tileloadend', function() {
-          console.log('tileloadend')
-        });
-        this.timeSource.on('tileloaderror', function() {
-          console.log('tileloaderror')
-        });
-    */
-
-    /*
-    this.preloadSource = new TileWMS({
-      attributions: ['copyrigt DWD'],
-      url: this.wmsurl,
-      params: {
-        'LAYERS': `dwd:${Layer.Name}`,
-        'TIME': times[1],
-        'VERSION': '1.3.0',
-        'CRS': this.view.getProjection()//Layer.CRS[0]
-      }
-    })
-    */
-    /*
-        this.preloadSource.on('tileloadstart', function() {
-          console.log('pre-tileloadstart')
-        });
-
-        this.preloadSource.on('tileloadend', function() {
-          console.log('pre-tileloadend')
-        });
-        this.preloadSource.on('tileloaderror', function() {
-          console.log('pre-tileloaderror')
-        });
-    */
 
     this.layer = new TileLayer({
       extent: layersextent,
@@ -467,17 +500,22 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.layerdescription = Layer.Abstract;
     this.layer.setOpacity(0.7);
 
-    /*
-    this.prelayer = new TileLayer({
-      //extent: extent,
-      source: this.preloadSource
-    })
-    this.prelayer.setOpacity(0);
-    */
-
     const overlays = this.getOverlays();
     overlays.getLayers().push(this.layer);
-    // overlays.getLayers().push(this.prelayer)
+
+
+    if (zoomCenter.zoom) {
+      this.view.setZoom(zoomCenter.zoom);
+    }
+    if (zoomCenter.center) {
+      this.view.setCenter(zoomCenter.center);
+    }
+
+    const mapOnMove = this.map.on('moveend', (evt) => {
+      this.currentState.center = this.map.getView().getCenter();
+      this.currentState.zoom = this.map.getView().getZoom();
+    });
+    this.mapSubs.push(mapOnMove);
   }
 
   getOverlays() {
@@ -489,5 +527,4 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
     return layer;
   }
-
 }

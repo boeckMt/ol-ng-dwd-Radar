@@ -21,7 +21,7 @@
   </mat-form-field>
 
   <mat-form-field class="produkt-select">
-    <h4>Wet­ter­be­rich­te (Text)</h4>
+    <h4>Wetterberichte (Text)</h4>
     <!-- [formControl]="weatherlayername"  (selectionChange)="" placeholder="Set Location" -->
     <mat-select [(value)]="location1">
       <mat-option *ngFor="let location of locations" [value]="location.id" [attr.selected]="location.id === location1">

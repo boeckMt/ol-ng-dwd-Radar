@@ -1,6 +1,6 @@
 @import "@angular/material/prebuilt-themes/indigo-pink.css";
-@import "~material-design-icons/iconfont/material-icons.css";
-@import '~ol/ol';
+@import "@material-design-icons/font/index.css";
+@import 'ol/ol.css';
 
 $header-height: 64px;
 $header-height-mobile: 56px;
@@ -17,11 +17,6 @@ $bottom-toolbar-height-mobile: 112px;
   color: rgba(255, 255, 255, 0.9);
 }
 
-.mat-accent .mat-slider-thumb,
-.mat-accent .mat-slider-thumb-label,
-.mat-accent .mat-slider-track-fill {
-  background-color: #EF6C00;
-}
 
 .mat-progress-bar.mat-debug {
   .mat-progress-bar-background {
@@ -117,11 +112,13 @@ main {
   }
 
   app-time-slider {
+    position: relative;
     width: 100%;
   }
 
   .mat-icon {
-    color: #EF6C00;
+    color: rgb(235, 156, 70);
+    cursor: pointer;
   }
 
   .title {
@@ -137,10 +134,27 @@ main {
   min-height: calc(100% / 4);
 
 
-
   display: flex;
   padding-top: 1rem;
   padding-bottom: 1rem;
+
+  .produkt-select {
+    height: 100%;
+
+    h4 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .opacity-input {
+    display: flex;
+    align-items: center;
+
+    #opacity-slider {
+      flex: 1;
+    }
+  }
 
   .col {
     flex: 1;

@@ -18,12 +18,16 @@
 <section class="map-time-control">
   <mat-toolbar>
     <mat-toolbar-row>
-      <app-time-slider [dates]="datesString" (dateChange)="sliderOnChange($event)"></app-time-slider>
+      <app-time-slider [dates]="datesString" [startTime]="startState.time"
+        (dateChange)="sliderOnChange($event)"></app-time-slider>
     </mat-toolbar-row>
     <mat-toolbar-row>
       <span class="title">
-        {{ slidervalue | date: 'dd/M/yyyy - HH:mm:ss'}}
+        {{ currentState.time | date: 'dd/M/yyyy - HH:mm:ss'}}
       </span>
+      <button mat-icon-button aria-label="share map" title="share current map view" (click)="shareLink()">
+        <mat-icon >share</mat-icon>
+      </button>
     </mat-toolbar-row>
   </mat-toolbar>
 </section>
@@ -40,9 +44,12 @@
       {{layerdescription}}
     </div>
 
-    <label for="opacity-slider">Opacity:</label>
-    <mat-slider id="opacity-slider" [tickInterval]="1" (change)="setLayerOpacity($event)" min="0" max="1"
-      [value]="getLayerOpacity()" step="0.1"></mat-slider>
+    <div class="opacity-input">
+      <label for="opacity-slider">Opacity:</label>
+      <mat-slider id="opacity-slider" showTickMarks (change)="setLayerOpacity($event)" min="0" max="1" step="0.1">
+        <input [value]="getLayerOpacity()" matSliderThumb>
+      </mat-slider>
+    </div>
 
     <div>
       <img [src]="legendurl" alt="Layer Legend">
