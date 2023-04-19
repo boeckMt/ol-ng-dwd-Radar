@@ -133,10 +133,27 @@ main {
   min-height: calc(100% / 4);
 
 
-
   display: flex;
   padding-top: 1rem;
   padding-bottom: 1rem;
+
+  .produkt-select {
+    height: 100%;
+
+    h4 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .opacity-input {
+    display: flex;
+    align-items: center;
+
+    #opacity-slider {
+      flex: 1;
+    }
+  }
 
   .col {
     flex: 1;

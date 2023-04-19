@@ -44,10 +44,12 @@
       {{layerdescription}}
     </div>
 
-    <label for="opacity-slider">Opacity:</label>
-    <mat-slider id="opacity-slider" showTickMarks (change)="setLayerOpacity($event)" min="0" max="1" step="0.1">
-      <input [value]="getLayerOpacity()" matSliderThumb>
-    </mat-slider>
+    <div class="opacity-input">
+      <label for="opacity-slider">Opacity:</label>
+      <mat-slider id="opacity-slider" showTickMarks (change)="setLayerOpacity($event)" min="0" max="1" step="0.1">
+        <input [value]="getLayerOpacity()" matSliderThumb>
+      </mat-slider>
+    </div>
 
     <div>
       <img [src]="legendurl" alt="Layer Legend">
