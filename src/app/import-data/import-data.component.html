@@ -1,0 +1,8 @@
+<div class="example-button-row">
+    <button type="button" mat-raised-button (click)="fileInput.click()">Choose File</button>
+    <button *ngIf="selectedFile?.name" type="button" mat-raised-button (click)="removeFileLayers()">Remove
+        Layers</button>
+</div>
+
+<mat-label *ngIf="selectedFile?.name">{{selectedFile?.name}}</mat-label>
+<input hidden (change)="onFileSelected($event)" #fileInput type="file">
