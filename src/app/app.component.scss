@@ -15,7 +15,13 @@ $bottom-toolbar-height-mobile: 112px;
 .mat-toolbar {
   background: rgb(0, 77, 64);
   color: rgba(255, 255, 255, 0.9);
+
+  .bottom-toolbar {
+    padding: 0 0.3rem
+  }
 }
+
+
 
 
 .mat-progress-bar.mat-debug {

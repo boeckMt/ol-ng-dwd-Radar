@@ -17,13 +17,13 @@
 </main>
 <section class="map-time-control">
   <mat-toolbar>
-    <mat-toolbar-row>
+    <mat-toolbar-row class="bottom-toolbar">
       <app-time-slider [dates]="datesString" [startTime]="startState.time"
         (dateChange)="sliderOnChange($event)"></app-time-slider>
     </mat-toolbar-row>
-    <mat-toolbar-row>
+    <mat-toolbar-row class="bottom-toolbar">
       <span class="title">
-        {{ currentState.time | date: 'dd/M/yyyy - HH:mm:ss'}}
+        {{ currentState.time | date: 'dd/M/yyyy - HH:mm'}}
       </span>
       <button mat-icon-button aria-label="share map" title="share current map view" (click)="shareLink()">
         <mat-icon >share</mat-icon>

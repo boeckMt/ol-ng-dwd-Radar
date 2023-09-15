@@ -1,5 +1,6 @@
 import { Component, OnInit, OnChanges } from '@angular/core';
 import { Input, Output, EventEmitter } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { findClosestDate } from '../utills';
 
 export interface IdateChange {
@@ -9,7 +10,8 @@ export interface IdateChange {
 @Component({
   selector: 'app-time-slider',
   templateUrl: './time-slider.component.html',
-  styleUrls: ['./time-slider.component.scss']
+  styleUrls: ['./time-slider.component.scss'],
+  providers: [DatePipe]
 })
 export class TimeSliderComponent implements OnChanges {
 
@@ -27,8 +29,13 @@ export class TimeSliderComponent implements OnChanges {
   playing = false;
   intervalID: any;
   isdisabled = true;
-  constructor() {
+  constructor(private datePipe: DatePipe) {
 
+  }
+
+  formatLabel = (value: number) => {
+    const now = (this.dates && this.sValue) ? this.dates[this.sValue] : this.dates[this.sMin];
+    return this.datePipe.transform(now,'HH:mm');
   }
 
   setSlider(value: '+' | '-') {

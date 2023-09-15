@@ -14,6 +14,7 @@
 
   mat-slider {
     width: calc(100% - (92px + 30px));
+    margin: 0 1.5rem;
 
     --mdc-slider-handle-color: rgb(235, 156, 70);
     --mdc-slider-focus-handle-color: rgb(235, 156, 70);
