@@ -34,8 +34,8 @@ export class TimeSliderComponent implements OnChanges {
   }
 
   formatLabel = (value: number) => {
-    const now = (this.dates && this.sValue) ? this.dates[this.sValue] : this.dates[this.sMin];
-    return this.datePipe.transform(now,'HH:mm');
+    const now = (this.dates && this.sValue) ? this.datePipe.transform(this.dates[this.sValue], 'HH:mm') : value;
+    return now;
   }
 
   setSlider(value: '+' | '-') {
