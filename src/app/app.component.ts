@@ -4,8 +4,8 @@ import { IdateChange } from './time-slider/time-slider.component';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import View from 'ol/View';
-import Map from 'ol/Map';
+import olView from 'ol/View';
+import olMap from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
 import XYZ from 'ol/source/XYZ';
 import LayerGroup from 'ol/layer/Group';
@@ -83,7 +83,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
     { value: 'Fachlayer.Wetter.Analysen.NCEW_EU', viewValue: 'Voraussichtliche Blitzeinschläge' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Analyse', viewValue: 'Autowarn_Analyse' },
-    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Vorhersage', viewValue: 'Autowarn_Vorhersage' }
+    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Vorhersage', viewValue: 'Autowarn_Vorhersage' },
+    { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'Radarkomposit 24h-Aufsummierung - alle 60 Minuten' },
+    { value: 'Fachlayer.Wetter.Radar.RADOLAN-W4', viewValue: 'Radarkomposit 30 Tage (SF-Produkt) - täglich' }
+
+    
   ];
   public weatherlayername = new FormControl<string>(this.weatherlayers[0]?.value ?? null);
   public datesString: string[];
@@ -102,8 +106,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   } = { link: null, title: null };
 
 
-  map: Map;
-  view: View;
+  map: olMap;
+  view: olView;
   EPSGCODE = 'EPSG:3857';
   capabilities: Icapabilities;
 
@@ -235,7 +239,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   initMap() {
-    this.view = new View({
+    this.view = new olView({
       center: this.startState.center,
       zoom: this.startState.zoom,
       projection: this.EPSGCODE
@@ -259,14 +263,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     const overlays = new LayerGroup();
     overlays.set('name', 'overlays');
 
-    this.map = new Map({
+    this.map = new olMap({
       view: this.view,
       layers: [
         baselayers,
         overlays
       ],
       interactions: defaultInteractions().extend([new DragRotateAndZoom()]),
-      controls: [new Attribution({
+      /* controls: [new Attribution({
         collapsed: false
       }),
       new Rotate(),
@@ -297,7 +301,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         }
       })
-      ],
+      ], */
       target: 'map'
     });
 

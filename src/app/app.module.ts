@@ -21,13 +21,15 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 /** dragable Footer */
 import { PwaHelper } from './pwa.helper';
 import { DwdWeatherReportsComponent } from './dwd-weather-reports/dwd-weather-reports.component';
+import { ImportDataComponent } from './import-data/import-data.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     TimeSliderComponent,
-    DwdWeatherReportsComponent
+    DwdWeatherReportsComponent,
+    ImportDataComponent
   ],
   imports: [
     BrowserModule,
