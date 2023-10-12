@@ -75,7 +75,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_rv.html
     { value: 'Fachlayer.Wetter.Radar.RV-Produkt', viewValue: 'Akkumulierte Niederschlagsmenge' }, //  akkumulierten Niederschlagsmenge
 
-    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Icon-eu_wawforeu_reg00625_fd_sl_T2M', viewValue: 'Temperature 2m WAWFOR ICON-EU' },
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_FF', viewValue: 'Windgeschwindigkeit' },
