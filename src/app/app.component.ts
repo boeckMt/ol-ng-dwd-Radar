@@ -16,6 +16,7 @@ import {
   DragRotateAndZoom,
   defaults as defaultInteractions
 } from 'ol/interaction'
+import { defaults as defaultControls } from 'ol/control/defaults';
 
 
 import { currentVersionKey, newVersionKey, PwaHelper } from './pwa.helper';
@@ -74,7 +75,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_rv.html
     { value: 'Fachlayer.Wetter.Radar.RV-Produkt', viewValue: 'Akkumulierte Niederschlagsmenge' }, //  akkumulierten Niederschlagsmenge
 
-    { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Icon-eu_wawforeu_reg00625_fd_sl_T2M', viewValue: 'Temperature 2m WAWFOR ICON-EU' },
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_FF', viewValue: 'Windgeschwindigkeit' },
@@ -87,12 +87,13 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'Radarkomposit 24h-Aufsummierung - alle 60 Minuten' },
     { value: 'Fachlayer.Wetter.Radar.RADOLAN-W4', viewValue: 'Radarkomposit 30 Tage (SF-Produkt) - täglich' }
 
-    
+
   ];
   public weatherlayername = new FormControl<string>(this.weatherlayers[0]?.value ?? null);
   public datesString: string[];
 
   public legendurl = '';
+  public layerCapsUrl = '';
   public progressBar: IProgress = {
     mode: 'indeterminate',
     color: 'primary'
@@ -270,38 +271,39 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         overlays
       ],
       interactions: defaultInteractions().extend([new DragRotateAndZoom()]),
-      /* controls: [new Attribution({
-        collapsed: false
-      }),
-      new Rotate(),
-      new ButtonControl({
-        innerHTML: `<span class="material-icons">my_location</span>`,
-        className: 'geo-locate-ctrl',
-        event: {
-          type: 'click', fn: () => {
-            if (!this.currentLocation.isLocated) {
-              getLocation(this.EPSGCODE, (coordinates => {
-                if (coordinates) {
-                  this.currentLocation.layer = addLocationLayer(this.map, coordinates);
-                  // this.view.setCenter(coordinates);
-                  // this.view.setZoom(18);
+      controls: defaultControls().extend([
+        new Attribution({
+          collapsed: false
+        }),
+        new Rotate(),
+        new ButtonControl({
+          innerHTML: `<span class="material-icons">my_location</span>`,
+          className: 'geo-locate-ctrl',
+          event: {
+            type: 'click', fn: () => {
+              if (!this.currentLocation.isLocated) {
+                getLocation(this.EPSGCODE, (coordinates => {
+                  if (coordinates) {
+                    this.currentLocation.layer = addLocationLayer(this.map, coordinates);
+                    // this.view.setCenter(coordinates);
+                    // this.view.setZoom(18);
+                  }
+                }));
+                this.currentLocation.isLocated = true;
+                return true;
+              } else {
+                // this.view.setZoom(this.currentLocation.lastZoom);
+                if (this.currentLocation.layer) {
+                  this.map.removeLayer(this.currentLocation.layer);
                 }
-              }));
-              this.currentLocation.isLocated = true;
-              return true;
-            } else {
-              // this.view.setZoom(this.currentLocation.lastZoom);
-              if (this.currentLocation.layer) {
-                this.map.removeLayer(this.currentLocation.layer);
+                this.currentLocation.isLocated = false;
+                return true;
               }
-              this.currentLocation.isLocated = false;
-              return true;
-            }
 
+            }
           }
-        }
-      })
-      ], */
+        })
+      ]),
       target: 'map'
     });
 
@@ -433,14 +435,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       // this.datesString = RadarLayer.Dimension[0].values.split(',');
       const layerConfig = this.weatherlayers.find(l => l.value === this.weatherlayername.value);
       // console.log(layerConfig)
-      if (layer.Dimension) {
+      if ('Dimension' in layer) {
         const allDates = checkDimensionTime(layer.Dimension[0]);
         if (layerConfig && (layerConfig.startDate || layerConfig.endDate)) {
           this.datesString = getDatesBetween(allDates, layerConfig.startDate, layerConfig.endDate);
         } else {
           this.datesString = allDates;
         }
-      }else{
+      } else {
         this.snackbar.open(`Layer without Time Dimension`, 'Close');
       }
 
@@ -461,11 +463,13 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.addLayer(layer, this.startState.time, { zoom: this.currentState.zoom, center: this.currentState.center });
 
+      if ('Style' in layer) {
+        this.legendurl = layer.Style[0].LegendURL[0].OnlineResource;
+      }
 
-      // fix: ExpressionChangedAfterItHasBeenCheckedError
-      // setTimeout(() => {
-      this.legendurl = layer.Style[0].LegendURL[0].OnlineResource;
-      // })
+      this.layerCapsUrl = `${this.wmsurl}?service=WMS&version=1.3.0&request=GetCapabilities&searchForLayer=${layer.Name}`
+      console.log(layer)
+
     } else {
       // console.log(caps);
       this.snackbar.open(`Layer ${this.weatherlayername.value} not found!`, 'Close');

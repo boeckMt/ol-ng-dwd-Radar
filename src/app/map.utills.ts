@@ -14,7 +14,7 @@ import VectorSource from 'ol/source/Vector';
 import { Coordinate } from 'ol/coordinate';
 import { Feature } from 'ol';
 import CircleStyle from 'ol/style/Circle';
-import { Fill, Style, Stroke } from 'ol/style';
+import { Fill, Style, Stroke, Circle } from 'ol/style';
 
 
 export function findLayerRecursive(lLayergroup: Layer | LayerEntity, path: string) {
@@ -117,6 +117,56 @@ export function addFileLayer(map: Map, data: string, remove?: boolean) {
   }
 
   let features = [];
+  const styles = {};
+  const white = [255, 255, 255, 1];
+  const blue = [0, 153, 255, 1];
+  const width = 3;
+  styles['Polygon'] = [
+    new Style({
+      fill: new Fill({
+        color: [255, 255, 255, 0.5],
+      })
+    })
+  ];
+
+  styles['MultiPolygon'] = styles['Polygon'];
+  styles['LineString'] = [
+    new Style({
+      stroke: new Stroke({
+        color: white,
+        width: width + 2,
+      }),
+    }),
+    new Style({
+      stroke: new Stroke({
+        color: blue,
+        width: width,
+      }),
+    }),
+  ];
+  styles['MultiLineString'] = styles['LineString'];
+
+  styles['Circle'] = styles['Polygon'].concat(
+    styles['LineString']
+  );
+
+  styles['Point'] = [
+    new Style({
+      image: new Circle({
+        radius: width * 2,
+        fill: new Fill({
+          color: blue,
+        }),
+        stroke: new Stroke({
+          color: white,
+          width: width / 2,
+        }),
+      }),
+      zIndex: Infinity,
+    })
+  ];
+  styles['MultiPoint'] = styles['Point'];
+  styles['GeometryCollection'] = styles['Polygon'].concat(styles['LineString'], styles['Point']);
 
   const isGpx = data.indexOf('<?xml') === 0;
   const mapEpsg = map.getView().getProjection().getCode();
@@ -147,7 +197,10 @@ export function addFileLayer(map: Map, data: string, remove?: boolean) {
     const fileLayer = new VectorLayer<VectorSource<PointGeom | LineGeom>>({
       source: new VectorSource({
         features: features
-      })
+      }),
+      style: (feature) => {
+        return styles[feature.getGeometry().getType()];
+      }
     })
     if (mapLayers.length) {
       fileLayer.set('id', 'FileLayer');

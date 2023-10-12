@@ -41,7 +41,7 @@
   </mat-form-field>
   <div class="legend col" *ngIf="legendurl">
     <div>
-      {{layerdescription}}
+      {{layerdescription}} | <a [href]="layerCapsUrl" target="_blank">GetCapabilities</a>
     </div>
 
     <div class="opacity-input">
