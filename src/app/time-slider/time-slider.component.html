@@ -12,7 +12,7 @@
   </button>
 
   <mat-slider showTickMarks discrete (change)="sliderOnChange($event)" [min]="sMin" [max]="sMax" [step]="sStep"
-    [disabled]="isdisabled">
+    [disabled]="isdisabled" [displayWith]="formatLabel">
     <input [value]="sMin" [(ngModel)]="sValue" matSliderThumb>
   </mat-slider>
 

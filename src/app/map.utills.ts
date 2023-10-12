@@ -12,7 +12,7 @@ import VectorSource from 'ol/source/Vector';
 import { Coordinate } from 'ol/coordinate';
 import { Feature } from 'ol';
 import CircleStyle from 'ol/style/Circle';
-import { Fill, Style } from 'ol/style';
+import { Fill, Style, Stroke } from 'ol/style';
 
 
 export function findLayerRecursive(lLayergroup: Layer | LayerEntity, path: string) {
@@ -72,6 +72,10 @@ export function addLocationLayer(map: Map, coordinates: Coordinate) {
       return new Style({
         image: new CircleStyle({
           radius: 6,
+          stroke: new Stroke({
+            color: 'black',
+            width: 1,
+          }),
           fill: new Fill({
             color: 'rgba(235, 156, 70, 0.8)',
           })
