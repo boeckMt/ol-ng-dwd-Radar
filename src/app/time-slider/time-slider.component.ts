@@ -1,17 +1,23 @@
 import { Component, OnInit, OnChanges } from '@angular/core';
 import { Input, Output, EventEmitter } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { findClosestDate } from '../utills';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatSlider, MatSliderThumb } from '@angular/material/slider';
+import { FormsModule } from '@angular/forms';
 
 export interface IdateChange {
   last: string | undefined; now: string; next: string | undefined;
 }
 
 @Component({
-  selector: 'app-time-slider',
-  templateUrl: './time-slider.component.html',
-  styleUrls: ['./time-slider.component.scss'],
-  providers: [DatePipe]
+    selector: 'app-time-slider',
+    templateUrl: './time-slider.component.html',
+    styleUrls: ['./time-slider.component.scss'],
+    providers: [DatePipe],
+    standalone: true,
+    imports: [MatIconButton, MatIcon, NgClass, MatSlider, MatSliderThumb, FormsModule]
 })
 export class TimeSliderComponent implements OnChanges {
 

@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit, OnDestroy } from '@angular/core';
 
-import { IdateChange } from './time-slider/time-slider.component';
-import { FormControl } from '@angular/forms';
+import { IdateChange, TimeSliderComponent } from './time-slider/time-slider.component';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import olView from 'ol/View';
@@ -26,12 +26,21 @@ import { Icapabilities } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours, getLocation as getUrlLocation, getSearchParamsFronString, getShareLink } from './utills';
 import { addLocationLayer, findLayerRecursive, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
-import { ThemePalette } from '@angular/material/core';
-import { ProgressBarMode } from '@angular/material/progress-bar';
+import { ThemePalette, MatOption } from '@angular/material/core';
+import { ProgressBarMode, MatProgressBar } from '@angular/material/progress-bar';
 import { ButtonControl } from './ol-custom-control';
 import { environment } from './../environments/environment';
 import { EventsKey } from 'ol/events';
 import { unByKey } from 'ol/Observable';
+import { NgClass, DatePipe } from '@angular/common';
+import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconButton } from '@angular/material/button';
+import { MatFormField } from '@angular/material/form-field';
+import { MatSelect } from '@angular/material/select';
+import { MatSlider, MatSliderThumb } from '@angular/material/slider';
+import { DwdWeatherReportsComponent } from './dwd-weather-reports/dwd-weather-reports.component';
+import { ImportDataComponent } from './import-data/import-data.component';
 
 
 export interface IProgress {
@@ -48,10 +57,12 @@ export interface IweatherlayerItem {
 
 
 @Component({
-  selector: 'app-root',
-  templateUrl: 'app.component.html',
-  styleUrls: ['app.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-root',
+    templateUrl: 'app.component.html',
+    styleUrls: ['app.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: true,
+    imports: [MatProgressBar, MatToolbar, MatIcon, NgClass, MatToolbarRow, TimeSliderComponent, MatIconButton, MatFormField, MatSelect, FormsModule, ReactiveFormsModule, MatOption, MatSlider, MatSliderThumb, DwdWeatherReportsComponent, ImportDataComponent, DatePipe]
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostBinding('class') class = 'app-container';
