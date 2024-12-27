@@ -22,7 +22,7 @@
     "@angular/compiler": "^19.0.5",
     "@angular/core": "^18.2.13",
     "@angular/forms": "^19.0.5",
-    "@angular/material": "^17.3.10",
+    "@angular/material": "^18.2.14",
     "@angular/platform-browser": "^19.0.5",
     "@angular/platform-browser-dynamic": "^19.0.5",
     "@angular/pwa": "^19.0.6",
