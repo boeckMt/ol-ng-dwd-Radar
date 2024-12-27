@@ -27,7 +27,7 @@ import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, 
 import { addLocationLayer, findLayerRecursive, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
-import { LegacyProgressBarMode as ProgressBarMode } from '@angular/material/legacy-progress-bar';
+import { ProgressBarMode } from '@angular/material/progress-bar';
 import { ButtonControl } from './ol-custom-control';
 import { environment } from './../environments/environment';
 import { EventsKey } from 'ol/events';

@@ -17,12 +17,12 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^17.3.12",
-    "@angular/cdk": "^16.2.14",
+    "@angular/cdk": "^17.3.10",
     "@angular/common": "^17.3.12",
     "@angular/compiler": "^17.3.12",
-    "@angular/core": "^16.2.12",
+    "@angular/core": "^17.3.12",
     "@angular/forms": "^17.3.12",
-    "@angular/material": "^16.2.14",
+    "@angular/material": "^16.2.0",
     "@angular/platform-browser": "^17.3.12",
     "@angular/platform-browser-dynamic": "^17.3.12",
     "@angular/pwa": "^15.2.4",
@@ -34,11 +34,11 @@
     "ol": "^7.3.0",
     "rxjs": "~6.6.3",
     "tslib": "^1.14.1",
-    "zone.js": "~0.13.3"
+    "zone.js": "~0.14.10"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^16.2.16",
-    "@angular/cli": "^16.2.16",
+    "@angular-devkit/build-angular": "^17.3.11",
+    "@angular/cli": "^17.3.11",
     "@angular/compiler-cli": "^17.3.12",
     "@angular/language-service": "^17.3.12",
     "@types/jasmine": "^3.10.7",
