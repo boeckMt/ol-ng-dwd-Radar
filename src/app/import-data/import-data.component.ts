@@ -7,9 +7,9 @@ import { MatLabel } from '@angular/material/form-field';
 
 @Component({
     selector: 'app-import-data',
+    standalone: true,
     templateUrl: './import-data.component.html',
     styleUrls: ['./import-data.component.scss'],
-    standalone: true,
     imports: [MatButton, MatLabel]
 })
 export class ImportDataComponent {

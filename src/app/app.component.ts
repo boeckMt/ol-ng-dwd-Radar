@@ -57,12 +57,13 @@ export interface IweatherlayerItem {
 
 
 @Component({
-    selector: 'app-root',
-    templateUrl: 'app.component.html',
-    styleUrls: ['app.component.scss'],
-    encapsulation: ViewEncapsulation.None,
-    standalone: true,
-    imports: [MatProgressBar, MatToolbar, MatIcon, NgClass, MatToolbarRow, TimeSliderComponent, MatIconButton, MatFormField, MatSelect, FormsModule, ReactiveFormsModule, MatOption, MatSlider, MatSliderThumb, DwdWeatherReportsComponent, ImportDataComponent, DatePipe]
+  selector: 'app-root',
+  standalone: true,
+  templateUrl: 'app.component.html',
+  styleUrls: ['app.component.scss'],
+  encapsulation: ViewEncapsulation.None,
+  // FormsModule, ReactiveFormsModule,
+  imports: [MatToolbar, MatToolbarRow, MatProgressBar, MatIcon, MatIconButton, NgClass, TimeSliderComponent, MatFormField, MatSelect, MatOption, MatSlider, MatSliderThumb, DwdWeatherReportsComponent, ImportDataComponent, DatePipe, ReactiveFormsModule]
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostBinding('class') class = 'app-container';

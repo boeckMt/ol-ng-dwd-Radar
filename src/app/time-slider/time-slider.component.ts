@@ -13,10 +13,10 @@ export interface IdateChange {
 
 @Component({
     selector: 'app-time-slider',
+    standalone: true,
     templateUrl: './time-slider.component.html',
     styleUrls: ['./time-slider.component.scss'],
     providers: [DatePipe],
-    standalone: true,
     imports: [MatIconButton, MatIcon, NgClass, MatSlider, MatSliderThumb, FormsModule]
 })
 export class TimeSliderComponent implements OnChanges {

@@ -21,9 +21,9 @@ interface IPlaceItem {
 
 @Component({
     selector: 'app-dwd-weather-reports',
+    standalone: true,
     templateUrl: './dwd-weather-reports.component.html',
     styleUrls: ['./dwd-weather-reports.component.scss'],
-    standalone: true,
     imports: [MatFormField, MatSelect, MatOption]
 })
 export class DwdWeatherReportsComponent implements OnInit {
