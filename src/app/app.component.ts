@@ -93,7 +93,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'Fachlayer.Wetter.Satellit.Satellite_meteosat_1km_euat_rgb_day_hrv_and_night_ir108_3h', viewValue: 'Satellitenbild METEOSAT' },
     { value: 'Fachlayer.Wetter.Satellit.Satellite_worldmosaic_3km_world_ir108_3h', viewValue: 'Satellitenbild Weltkomposit IR' },
 
-    { value: 'Fachlayer.Wetter.Analysen.NCEW_EU', viewValue: 'Voraussichtliche Blitzeinschläge' },
+    { value: 'Fachlayer.Wetter.Beobachtungen.Blitzdichte', viewValue: 'Blitzdichte' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Analyse', viewValue: 'Autowarn_Analyse' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Vorhersage', viewValue: 'Autowarn_Vorhersage' },
     { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'Radarkomposit 24h-Aufsummierung - alle 60 Minuten' },
