@@ -40,7 +40,7 @@ jobs:
         with:
           # Upload entire repository
           name: github-pages
-          path: docs
+          path: docs/browser
           
 
   # Deployment job
@@ -55,7 +55,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: github-pages
-          path: docs
         
       - name: Deploy to GitHub Pages
         id: deployment
