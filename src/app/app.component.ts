@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit, OnDestroy } from '@angular/core';
 
-import { IdateChange } from './time-slider/time-slider.component';
-import { FormControl } from '@angular/forms';
+import { IdateChange, TimeSliderComponent } from './time-slider/time-slider.component';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import olView from 'ol/View';
@@ -26,12 +26,21 @@ import { Icapabilities } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours, getLocation as getUrlLocation, getSearchParamsFronString, getShareLink } from './utills';
 import { addLocationLayer, findLayerRecursive, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
-import { ThemePalette } from '@angular/material/core';
-import { LegacyProgressBarMode as ProgressBarMode } from '@angular/material/legacy-progress-bar';
+import { ThemePalette, MatOption } from '@angular/material/core';
+import { ProgressBarMode, MatProgressBar } from '@angular/material/progress-bar';
 import { ButtonControl } from './ol-custom-control';
 import { environment } from './../environments/environment';
 import { EventsKey } from 'ol/events';
 import { unByKey } from 'ol/Observable';
+import { NgClass, DatePipe } from '@angular/common';
+import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconButton } from '@angular/material/button';
+import { MatFormField } from '@angular/material/form-field';
+import { MatSelect } from '@angular/material/select';
+import { MatSlider, MatSliderThumb } from '@angular/material/slider';
+import { DwdWeatherReportsComponent } from './dwd-weather-reports/dwd-weather-reports.component';
+import { ImportDataComponent } from './import-data/import-data.component';
 
 
 export interface IProgress {
@@ -49,9 +58,12 @@ export interface IweatherlayerItem {
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
+  // FormsModule, ReactiveFormsModule,
+  imports: [MatToolbar, MatToolbarRow, MatProgressBar, MatIcon, MatIconButton, NgClass, TimeSliderComponent, MatFormField, MatSelect, MatOption, MatSlider, MatSliderThumb, DwdWeatherReportsComponent, ImportDataComponent, DatePipe, ReactiveFormsModule]
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostBinding('class') class = 'app-container';
@@ -81,7 +93,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'Fachlayer.Wetter.Satellit.Satellite_meteosat_1km_euat_rgb_day_hrv_and_night_ir108_3h', viewValue: 'Satellitenbild METEOSAT' },
     { value: 'Fachlayer.Wetter.Satellit.Satellite_worldmosaic_3km_world_ir108_3h', viewValue: 'Satellitenbild Weltkomposit IR' },
 
-    { value: 'Fachlayer.Wetter.Analysen.NCEW_EU', viewValue: 'Voraussichtliche Blitzeinschläge' },
+    { value: 'Fachlayer.Wetter.Beobachtungen.Blitzdichte', viewValue: 'Blitzdichte' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Analyse', viewValue: 'Autowarn_Analyse' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Vorhersage', viewValue: 'Autowarn_Vorhersage' },
     { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'Radarkomposit 24h-Aufsummierung - alle 60 Minuten' },

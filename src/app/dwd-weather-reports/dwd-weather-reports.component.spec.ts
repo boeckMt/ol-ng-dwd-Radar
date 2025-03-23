@@ -8,8 +8,8 @@ describe('DwdWeatherReportsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ DwdWeatherReportsComponent ]
-    })
+    imports: [DwdWeatherReportsComponent]
+})
     .compileComponents();
   });
 

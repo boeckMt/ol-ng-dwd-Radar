@@ -1,7 +1,7 @@
 import { ApplicationRef, Injectable } from '@angular/core';
-import { SwUpdate } from '@angular/service-worker';
+import { SwUpdate, VersionDetectedEvent, VersionReadyEvent } from '@angular/service-worker';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { first } from 'rxjs/operators'
+import { filter, first } from 'rxjs/operators'
 
 
 export const currentVersionKey = 'ol-ng-dwd-Radar-current-version';
@@ -21,33 +21,42 @@ export class PwaHelper {
   checkUpdates() {
     if (this.swUpdate.isEnabled) {
       console.log('check swUpdate', this.swUpdate);
-      this.swUpdate.available.subscribe((event) => {
-        console.log('swUpdate.available', event);
-        // check Update
-        window.localStorage.setItem(currentVersionKey, event.current.hash);
-        window.localStorage.setItem(newVersionKey, event.available.hash);
+      const currentVersion = window.localStorage.getItem(currentVersionKey);
 
-        console.log('available: current version is', event.current);
-        console.log('available: available version is', event.available);
+      this.swUpdate.versionUpdates
+        .pipe(filter((evt): evt is VersionDetectedEvent => evt.type === 'VERSION_DETECTED'))
+        .subscribe((event) => {
+          console.log('swUpdate.available', event);
 
-        // download Update
-        this.swUpdate.activateUpdate().then(() => {
-          // Update gets downloaded
-          // `Current version is: ${event.current} - Update Available; ${event.available}`
+          const newVersion = event.version;
+          // check Update
+          window.localStorage.setItem(newVersionKey, newVersion.hash);
 
-          const snack = this.snackbar.open(`Update for the App Available`, 'Reload');
-          const sub = snack.onAction().subscribe(() => {
-            window.location.reload();
-            sub.unsubscribe();
+          console.log('available: current version is', currentVersion);
+          console.log('available: available version is', event.version);
+
+          // download Update
+          this.swUpdate.activateUpdate().then(() => {
+            // Update gets downloaded
+            // `Current version is: ${event.current} - Update Available; ${event.available}`
+
+            const snack = this.snackbar.open(`Update for the App Available`, 'Reload');
+            const sub = snack.onAction().subscribe(() => {
+              window.location.reload();
+              if (currentVersion) {
+                window.localStorage.setItem(currentVersionKey, newVersion.hash);
+              }
+              sub.unsubscribe();
+            });
           });
         });
-      });
 
-      this.swUpdate.activated.subscribe((event) => {
-        console.log('swUpdate.activated', event);
-        console.log('activated: current version is', event.current);
-        console.log('activated: previous version is', event.previous);
-      });
+      this.swUpdate.versionUpdates
+        .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
+        .subscribe(event => {
+          console.log('activated: current version is', event.currentVersion);
+          console.log('activated: previous version is', event.latestVersion);
+        });
 
 
       // Handling an unrecoverable state of versions

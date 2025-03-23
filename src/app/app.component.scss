@@ -13,8 +13,8 @@ $bottom-toolbar-height-mobile: 112px;
 
 
 .mat-toolbar {
-  background: rgb(0, 77, 64);
-  color: rgba(255, 255, 255, 0.9);
+  --mat-toolbar-container-background-color: rgb(0, 77, 64);
+  --mat-toolbar-container-text-color: rgba(255, 255, 255, 0.9);
 
   .bottom-toolbar {
     padding: 0 0.3rem

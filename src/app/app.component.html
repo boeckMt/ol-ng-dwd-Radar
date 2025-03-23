@@ -1,5 +1,7 @@
 <!-- https://material.io/icons/ -->
-<mat-progress-bar *ngIf="isLoading()" [color]="progressBar.color" [mode]="progressBar.mode"></mat-progress-bar>
+@if (isLoading()) {
+  <mat-progress-bar [color]="progressBar.color" [mode]="progressBar.mode"></mat-progress-bar>
+}
 <header>
   <mat-toolbar>
     <mat-icon class="btn" title="refresh" (click)="refresh()">refresh</mat-icon>
@@ -19,7 +21,7 @@
   <mat-toolbar>
     <mat-toolbar-row class="bottom-toolbar">
       <app-time-slider [dates]="datesString" [startTime]="startState.time"
-        (dateChange)="sliderOnChange($event)"></app-time-slider>
+      (dateChange)="sliderOnChange($event)"></app-time-slider>
     </mat-toolbar-row>
     <mat-toolbar-row class="bottom-toolbar">
       <span class="title">
@@ -31,38 +33,45 @@
     </mat-toolbar-row>
   </mat-toolbar>
 </section>
-<section class="details" *ngIf="navOpen" [ngClass]="{'is-loading':isLoading()}">
-  <mat-form-field class="produkt-select col">
-    <mat-select (selectionChange)="produktChange()" placeholder="Set Produkt" [formControl]="weatherlayername">
-      <mat-option *ngFor="let produkt of weatherlayers" [value]="produkt.value">
-        {{ produkt.viewValue }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-  <div class="legend col" *ngIf="legendurl">
-    <div>
-      {{layerdescription}} | <a [href]="layerCapsUrl" target="_blank">GetCapabilities</a>
-    </div>
-
-    <div class="opacity-input">
-      <label for="opacity-slider">Opacity:</label>
-      <mat-slider id="opacity-slider" showTickMarks (change)="setLayerOpacity($event)" min="0" max="1" step="0.1">
-        <input [value]="getLayerOpacity()" matSliderThumb>
-      </mat-slider>
-    </div>
-
-    <div>
-      <img [src]="legendurl" alt="Layer Legend">
-    </div>
-  </div>
-
-  <app-dwd-weather-reports class="col"></app-dwd-weather-reports>
-  <app-import-data [map]="map" class="col"></app-import-data>
-</section>
-<footer *ngIf="navOpen">
-  <section class="foter-inner">
-    <div class="left" *ngIf="swVersion.available" title="{{swVersion.available}}">version: {{swVersion.available}}</div>
-    <div class="right"><a href="https://github.com/boeckMt/ol-ng-dwd-Radar" target="_blank">check the
-        source code</a></div>
+@if (navOpen) {
+  <section class="details" [ngClass]="{'is-loading':isLoading()}">
+    <mat-form-field class="produkt-select col">
+      <mat-select (selectionChange)="produktChange()" placeholder="Set Produkt" [formControl]="weatherlayername">
+        @for (produkt of weatherlayers; track produkt) {
+          <mat-option [value]="produkt.value">
+            {{ produkt.viewValue }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    @if (legendurl) {
+      <div class="legend col">
+        <div>
+          {{layerdescription}} | <a [href]="layerCapsUrl" target="_blank">GetCapabilities</a>
+        </div>
+        <div class="opacity-input">
+          <label for="opacity-slider">Opacity:</label>
+          <mat-slider id="opacity-slider" showTickMarks (change)="setLayerOpacity($event)" min="0" max="1" step="0.1">
+            <input [value]="getLayerOpacity()" matSliderThumb>
+          </mat-slider>
+        </div>
+        <div>
+          <img [src]="legendurl" alt="Layer Legend">
+        </div>
+      </div>
+    }
+    <app-dwd-weather-reports class="col"></app-dwd-weather-reports>
+    <app-import-data [map]="map" class="col"></app-import-data>
   </section>
-</footer>
+}
+@if (navOpen) {
+  <footer>
+    <section class="foter-inner">
+      @if (swVersion.available) {
+        <div class="left" title="{{swVersion.available}}">version: {{swVersion.available}}</div>
+      }
+      <div class="right"><a href="https://github.com/boeckMt/ol-ng-dwd-Radar" target="_blank">check the
+      source code</a></div>
+    </section>
+  </footer>
+}

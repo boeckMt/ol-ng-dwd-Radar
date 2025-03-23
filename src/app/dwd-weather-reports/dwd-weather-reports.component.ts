@@ -1,5 +1,9 @@
 import { Input } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
+import { MatFormField } from '@angular/material/form-field';
+import { MatSelect } from '@angular/material/select';
+
+import { MatOption } from '@angular/material/core';
 
 interface ILocationItem {
   id: string;
@@ -16,9 +20,11 @@ interface IPlaceItem {
 }
 
 @Component({
-  selector: 'app-dwd-weather-reports',
-  templateUrl: './dwd-weather-reports.component.html',
-  styleUrls: ['./dwd-weather-reports.component.scss']
+    selector: 'app-dwd-weather-reports',
+    standalone: true,
+    templateUrl: './dwd-weather-reports.component.html',
+    styleUrls: ['./dwd-weather-reports.component.scss'],
+    imports: [MatFormField, MatSelect, MatOption]
 })
 export class DwdWeatherReportsComponent implements OnInit {
   @Input() location1: string = 'bayern';
