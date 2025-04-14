@@ -82,10 +82,23 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   public weatherlayers: IweatherlayerItem[] = [
     // https://www.dwd.de/DE/leistungen/radarprodukte/radarprodukte.html
     // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_wn.html
-    { value: 'Fachlayer.Wetter.Radar.WN-Produkt', viewValue: 'Radarvorhersage', startDate: addHours(DateTime.local().toISO(), 2, '-') },
+    // https://dwd-geoportal.de/products/RADAR_WN/
+
+
+    //Layer  BRD_Orte
+    { value: 'Fachlayer.Wetter.Radar.Radar_wn-product_1x1km_ger', viewValue: 'WN mit Analyse- und Vorhersagedaten', startDate: addHours(DateTime.local().toISO(), 2, '-') },
+    { value: 'Fachlayer.Wetter.Radar.Radar_rv_product_1x1km_ger', viewValue: 'Radarkomposit Analyse und Vorhersage (RV)', startDate: addHours(DateTime.local().toISO(), 2, '-') },
+    { value: 'Fachlayer.Wetter.Radar.Niederschlagsradar', viewValue: 'Niederschlagsradar (RV-Produkt)' },
+    { value: 'Fachlayer.Wetter.Radar.RADOLAN-RW', viewValue: 'angeeichtes Radarkomposit (RW)' },
     { value: 'Fachlayer.Wetter.Radar.RADOLAN-RY', viewValue: 'Qualitätsgeprüfte Radardaten (RY)' },
+    
+    // { value: 'Fachlayer.Wetter.Radar.Radar_wn-analysis_1x1km_ger', viewValue: 'Deutsches Radarkomposit WN', startDate: addHours(DateTime.local().toISO(), 2, '-') },
     // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_rv.html
-    { value: 'Fachlayer.Wetter.Radar.RV-Produkt', viewValue: 'Akkumulierte Niederschlagsmenge' }, //  akkumulierten Niederschlagsmenge
+    { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'Radarkomposit 24h-Aufsummierung - alle 60 Minuten' },
+    { value: 'Fachlayer.Wetter.Radar.RADOLAN-W4', viewValue: 'Radarkomposit 30 Tage (SF-Produkt) - täglich' },
+
+    
+    { value: 'Basislayer.EUCOS_surface_stations', viewValue: 'EUCOS Bodenstationen', popup:true },
 
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
@@ -96,10 +109,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'Fachlayer.Wetter.Beobachtungen.Blitzdichte', viewValue: 'Blitzdichte' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Analyse', viewValue: 'Autowarn_Analyse' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Vorhersage', viewValue: 'Autowarn_Vorhersage' },
-    { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'Radarkomposit 24h-Aufsummierung - alle 60 Minuten' },
-    { value: 'Fachlayer.Wetter.Radar.RADOLAN-W4', viewValue: 'Radarkomposit 30 Tage (SF-Produkt) - täglich' }
-
-
   ];
   public weatherlayername = new FormControl<string>(this.weatherlayers[0]?.value ?? null);
   public datesString: string[];
