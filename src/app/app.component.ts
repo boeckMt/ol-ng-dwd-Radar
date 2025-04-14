@@ -24,7 +24,7 @@ import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours, getLocation as getUrlLocation, getSearchParamsFronString, getShareLink } from './utills';
-import { addLocationLayer, findLayerRecursive, getLocation, getTileGrid } from './map.utills';
+import { addLocationLayer, findLayerRecursive, getFeatureInfo, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
 import { ThemePalette, MatOption } from '@angular/material/core';
 import { ProgressBarMode, MatProgressBar } from '@angular/material/progress-bar';
@@ -41,6 +41,7 @@ import { MatSelect } from '@angular/material/select';
 import { MatSlider, MatSliderThumb } from '@angular/material/slider';
 import { DwdWeatherReportsComponent } from './dwd-weather-reports/dwd-weather-reports.component';
 import { ImportDataComponent } from './import-data/import-data.component';
+import { ILocationItem, initLocations, IPlaceItem } from './data.utills';
 
 
 export interface IProgress {
@@ -53,6 +54,7 @@ export interface IweatherlayerItem {
   viewValue: string;
   startDate?: string;
   endDate?: string;
+  popup?: boolean;
 }
 
 
@@ -82,10 +84,23 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   public weatherlayers: IweatherlayerItem[] = [
     // https://www.dwd.de/DE/leistungen/radarprodukte/radarprodukte.html
     // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_wn.html
-    { value: 'Fachlayer.Wetter.Radar.WN-Produkt', viewValue: 'Radarvorhersage', startDate: addHours(DateTime.local().toISO(), 2, '-') },
+    // https://dwd-geoportal.de/products/RADAR_WN/
+
+
+    //Layer  BRD_Orte
+    { value: 'Fachlayer.Wetter.Radar.Radar_wn-product_1x1km_ger', viewValue: 'WN mit Analyse- und Vorhersagedaten', startDate: addHours(DateTime.local().toISO(), 2, '-') },
+    { value: 'Fachlayer.Wetter.Radar.Radar_rv_product_1x1km_ger', viewValue: 'Radarkomposit Analyse und Vorhersage (RV)', startDate: addHours(DateTime.local().toISO(), 2, '-') },
+    { value: 'Fachlayer.Wetter.Radar.Niederschlagsradar', viewValue: 'Niederschlagsradar (RV-Produkt)' },
+    { value: 'Fachlayer.Wetter.Radar.RADOLAN-RW', viewValue: 'angeeichtes Radarkomposit (RW)' },
     { value: 'Fachlayer.Wetter.Radar.RADOLAN-RY', viewValue: 'Qualitätsgeprüfte Radardaten (RY)' },
+    
+    // { value: 'Fachlayer.Wetter.Radar.Radar_wn-analysis_1x1km_ger', viewValue: 'Deutsches Radarkomposit WN', startDate: addHours(DateTime.local().toISO(), 2, '-') },
     // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_rv.html
-    { value: 'Fachlayer.Wetter.Radar.RV-Produkt', viewValue: 'Akkumulierte Niederschlagsmenge' }, //  akkumulierten Niederschlagsmenge
+    { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'Radarkomposit 24h-Aufsummierung - alle 60 Minuten' },
+    { value: 'Fachlayer.Wetter.Radar.RADOLAN-W4', viewValue: 'Radarkomposit 30 Tage (SF-Produkt) - täglich' },
+
+    
+    { value: 'Basislayer.EUCOS_surface_stations', viewValue: 'EUCOS Bodenstationen', popup:true },
 
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
@@ -96,10 +111,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'Fachlayer.Wetter.Beobachtungen.Blitzdichte', viewValue: 'Blitzdichte' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Analyse', viewValue: 'Autowarn_Analyse' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Vorhersage', viewValue: 'Autowarn_Vorhersage' },
-    { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'Radarkomposit 24h-Aufsummierung - alle 60 Minuten' },
-    { value: 'Fachlayer.Wetter.Radar.RADOLAN-W4', viewValue: 'Radarkomposit 30 Tage (SF-Produkt) - täglich' }
-
-
   ];
   public weatherlayername = new FormControl<string>(this.weatherlayers[0]?.value ?? null);
   public datesString: string[];
@@ -151,6 +162,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     layer: string
   };
 
+  public reportPlaces: IPlaceItem[];
+  public reportLocations: ILocationItem[];
+
   constructor(private elRef: ElementRef, private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
     if (environment.production) {
       this.useCapsFromStore = false;
@@ -161,6 +175,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       time: this.startState.time,
       layer: this.startState.layer
     };
+    const pl = initLocations()
+    this.reportLocations = pl.locations;
+    this.reportPlaces = pl.places;
   }
 
   public formatDate = formatDate;
@@ -320,13 +337,16 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
 
-    /* const mapOnClick = this.map.on('click', (evt) => {
+    const mapOnClick = this.map.on('click', (evt) => {
       const zoom = this.map.getView().getZoom();
       const center = this.map.getView().getCenter();
       const extent = this.map.getView().calculateExtent(this.map.getSize());
       // console.log(zoom, center, extent);
+      // console.log(this.reportPlaces);
+      getFeatureInfo(this.map,evt, this.reportPlaces);
+      // displayFeatureInfo(this.map, evt);
     });
-    this.mapSubs.push(mapOnClick); */
+    this.mapSubs.push(mapOnClick);
 
     this.afterInit().then((caps) => {
       if (caps && 'version' in caps) {
@@ -446,22 +466,24 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       // this.checkDimensionTime(RadarLayer.Dimension[0]);
       // this.datesString = RadarLayer.Dimension[0].values.split(',');
       const layerConfig = this.weatherlayers.find(l => l.value === this.weatherlayername.value);
-      // console.log(layerConfig)
-      if ('Dimension' in layer) {
+      // console.log(layerConfig, layer);
+      if ('Dimension' in layer && Array.isArray(layer.Dimension)) {
         const allDates = checkDimensionTime(layer.Dimension[0]);
         if (layerConfig && (layerConfig.startDate || layerConfig.endDate)) {
           this.datesString = getDatesBetween(allDates, layerConfig.startDate, layerConfig.endDate);
         } else {
           this.datesString = allDates;
         }
+
+        // here timeslider is finds the start date -> findClosestDate()
+        this.startState.time = this.datesString[0];
       } else {
         this.snackbar.open(`Layer without Time Dimension`, 'Close');
       }
 
-      // here timeslider is finds the start date -> findClosestDate()
-      this.startState.time = this.datesString[0];
+      
 
-      if (!refresh) {
+      if (!refresh && this.datesString?.length) {
         const startTimeIndex = this.datesString.indexOf(this.currentState.time);
         if (startTimeIndex !== -1) {
           // here timeslider uses this date if existing
@@ -473,7 +495,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
 
-      this.addLayer(layer, this.startState.time, { zoom: this.currentState.zoom, center: this.currentState.center });
+      this.addLayer(layer, this.startState.time, { zoom: this.currentState.zoom, center: this.currentState.center }, layerConfig.popup);
 
       if ('Style' in layer) {
         this.legendurl = layer.Style[0].LegendURL[0].OnlineResource;
@@ -488,31 +510,38 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  addLayer(Layer, startTime: string, zoomCenter: { zoom?: number, center?: number[] }) {
+  addLayer(Layer, startTime: string, zoomCenter: { zoom?: number, center?: number[] }, popup?:boolean) {
     let layersextent = Layer.BoundingBox.filter(item => item.crs === this.EPSGCODE);
     if (!layersextent.length) {
       layersextent = this.fallbackExtent;
     } else {
       layersextent = layersextent[0].extent;
     }
-    this.timeSource = new TileWMS({
+    const tileWmsConfig:any = {
       attributions: ['&copy; <a href="https://www.dwd.de/DE/service/copyright/copyright_node.html" target="_blank">DWD</a>'],
       url: this.wmsurl,
       params: {
         LAYERS: `dwd:${Layer.Name}`,
         VERSION: '1.3.0',
         CRS: this.view.getProjection(), // Layer.CRS[0]
-        TIME: startTime,
         TILED: true
       },
       serverType: 'geoserver',
       tileGrid: getTileGrid(layersextent, this.EPSGCODE)
-    });
+    };
+    if(startTime){
+      tileWmsConfig.TIME = startTime;
+    }
+    this.timeSource = new TileWMS(tileWmsConfig);
 
     this.layer = new TileLayer({
       extent: layersextent,
       source: this.timeSource
     });
+    this.layer.set('name','wms-layer');
+    if(popup){
+      this.layer.set('popup',true);
+    }
 
     // layer.set('title',Layer.Title);
     this.layertitle = Layer.Title;
