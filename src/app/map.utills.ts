@@ -12,9 +12,11 @@ import PointGeom from 'ol/geom/Point';
 import LineGeom from 'ol/geom/LineString';
 import VectorSource from 'ol/source/Vector';
 import { Coordinate } from 'ol/coordinate';
-import { Feature } from 'ol';
+import { Feature, MapBrowserEvent, Overlay } from 'ol';
 import CircleStyle from 'ol/style/Circle';
 import { Fill, Style, Stroke, Circle } from 'ol/style';
+import TileWMS from 'ol/source/TileWMS';
+import { IPlaceItem } from './data.utills';
 
 
 export function findLayerRecursive(lLayergroup: Layer | LayerEntity, path: string) {
@@ -237,4 +239,149 @@ export function createImageLayer() {
     `vhs_brd_heutemittag.jpg`
   ];
 
+}
+
+let currentFeature;
+export function displayFeatureInfo(map: Map, evt: MapBrowserEvent<any>) {
+  const info = document.getElementById('info');
+  const pixel = evt.pixel;
+  const feature = evt.originalEvent.target.closest('.ol-control')
+    ? undefined
+    : map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+      return feature;
+    });
+  if (feature) {
+    info.style.left = pixel[0] + 'px';
+    info.style.top = pixel[1] + 'px';
+    if (feature !== currentFeature) {
+      info.style.visibility = 'visible';
+      info.innerText = feature.get('ECO_NAME');
+    }
+  } else {
+    info.style.visibility = 'hidden';
+  }
+  currentFeature = feature;
+}
+
+/*
+function createPopupHtml(obj: any) {
+  let htmlStr = '<table>';
+  for (const o in obj) {
+    if (obj.hasOwnProperty(o)) {
+      htmlStr += '<tr><td style="vertical-align: top; padding-right: 7px;"><b>' + o + ': </b></td><td>' + obj[o] +
+        '</td></tr>';
+    }
+  }
+  htmlStr = htmlStr + '</table>';
+  return htmlStr;
+*/
+
+function createPopupHtml(obj: any) {
+  let htmlStr = '';
+  for (const o in obj) {
+    if (obj.hasOwnProperty(o)) {
+      htmlStr += `<div><b>${o}</b>: ${obj[o]}</div>`;
+    }
+  }
+  htmlStr = htmlStr + '</div>';
+  return htmlStr;
+}
+
+
+export function getFeatureInfo(map: Map, evt: MapBrowserEvent<any>, places?:IPlaceItem[]) {
+  const info = document.getElementById('info');
+
+  const content = document.createElement('div');
+  content.className = 'ol-popup-content';
+  const popupID = 'layer_popup';
+  const popup = new Overlay({
+    id: popupID,
+    autoPan: {
+      animation: {
+        duration: 250
+      }
+    },
+    positioning: 'bottom-center',
+    stopEvent: true,
+    insertFirst: false
+  });
+
+  const layers = map.getAllLayers();
+  const infoLayer = layers.find(l => l.get('name') && l.get('name') === 'wms-layer');
+  console.log(infoLayer)
+
+  if (infoLayer && infoLayer.get('popup')) {
+    const wmsSource = infoLayer.getSource() as TileWMS;
+    const view = map.getView();
+    const viewResolution = view.getResolution();
+    const epsg = view.getProjection().getCode()
+    const url = wmsSource.getFeatureInfoUrl(
+      evt.coordinate,
+      viewResolution,
+      epsg,
+      { INFO_FORMAT: 'application/json' }
+    );
+
+    if (url) {
+      fetch(url).then(response => response.json())
+        .catch((error) => {
+          console.log(error);
+        })
+        .then((data) => {
+          if (data.features.length) {
+            const feature = data.features[0];
+            if (feature) {
+              const hasName = (feature?.properties?.NAME as string)?.toLocaleLowerCase()?.replace(/ /g,'_');
+              console.log(hasName);
+              if(places && hasName){
+                const findPlace = places.find(p => p.id === hasName);
+                if(findPlace){
+                  const newProps = {
+                    name: feature.properties.NAME,
+                    link: findPlace.linkWeatherOnSite
+                  }
+                  feature.properties = newProps;
+                  content.innerHTML = `<div><a href="${newProps.link}" target="_blank">${newProps.name}</a></div>`;
+                }else{
+                  content.innerHTML = createPopupHtml(feature.properties);
+                }
+              }else{
+                content.innerHTML = createPopupHtml(feature.properties);
+              }
+              map.removeOverlay(getOverlays(map, popupID)[0]);
+              let coordinate;
+              
+              if (feature && feature.geometry.type === 'Point') {
+                coordinate = feature.geometry.coordinates;
+              } else {
+                coordinate = evt.coordinate;
+              }
+              
+              popup.setElement(content);
+              popup.setPosition(coordinate);
+              map.addOverlay(popup);
+
+            } else {
+              console.log('remove overlay no feature', getOverlays(map, popupID)[0])
+              map.removeOverlay(getOverlays(map, popupID)[0]);
+            }
+          } else {
+            console.log('remove overlay no features', getOverlays(map, popupID)[0])
+            map.removeOverlay(getOverlays(map, popupID)[0]);
+          }
+          currentFeature = data.features[0];
+        });
+    }
+
+  } else {
+    map.removeOverlay(popup);
+  }
+}
+
+export function getOverlays(map: Map, id?: string) {
+  if (id) {
+    return [map.getOverlayById(id)];
+  } else {
+    return map.getOverlays();
+  }
 }

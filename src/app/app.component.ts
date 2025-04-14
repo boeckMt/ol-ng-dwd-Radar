@@ -24,7 +24,7 @@ import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
 import { Icapabilities } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours, getLocation as getUrlLocation, getSearchParamsFronString, getShareLink } from './utills';
-import { addLocationLayer, findLayerRecursive, getLocation, getTileGrid } from './map.utills';
+import { addLocationLayer, findLayerRecursive, getFeatureInfo, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
 import { ThemePalette, MatOption } from '@angular/material/core';
 import { ProgressBarMode, MatProgressBar } from '@angular/material/progress-bar';
@@ -41,6 +41,7 @@ import { MatSelect } from '@angular/material/select';
 import { MatSlider, MatSliderThumb } from '@angular/material/slider';
 import { DwdWeatherReportsComponent } from './dwd-weather-reports/dwd-weather-reports.component';
 import { ImportDataComponent } from './import-data/import-data.component';
+import { ILocationItem, initLocations, IPlaceItem } from './data.utills';
 
 
 export interface IProgress {
@@ -53,6 +54,7 @@ export interface IweatherlayerItem {
   viewValue: string;
   startDate?: string;
   endDate?: string;
+  popup?: boolean;
 }
 
 
@@ -160,6 +162,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     layer: string
   };
 
+  public reportPlaces: IPlaceItem[];
+  public reportLocations: ILocationItem[];
+
   constructor(private elRef: ElementRef, private snackbar: MatSnackBar, private pwaHelper: PwaHelper) {
     if (environment.production) {
       this.useCapsFromStore = false;
@@ -170,6 +175,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       time: this.startState.time,
       layer: this.startState.layer
     };
+    const pl = initLocations()
+    this.reportLocations = pl.locations;
+    this.reportPlaces = pl.places;
   }
 
   public formatDate = formatDate;
@@ -329,13 +337,16 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
 
-    /* const mapOnClick = this.map.on('click', (evt) => {
+    const mapOnClick = this.map.on('click', (evt) => {
       const zoom = this.map.getView().getZoom();
       const center = this.map.getView().getCenter();
       const extent = this.map.getView().calculateExtent(this.map.getSize());
       // console.log(zoom, center, extent);
+      // console.log(this.reportPlaces);
+      getFeatureInfo(this.map,evt, this.reportPlaces);
+      // displayFeatureInfo(this.map, evt);
     });
-    this.mapSubs.push(mapOnClick); */
+    this.mapSubs.push(mapOnClick);
 
     this.afterInit().then((caps) => {
       if (caps && 'version' in caps) {
@@ -455,8 +466,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       // this.checkDimensionTime(RadarLayer.Dimension[0]);
       // this.datesString = RadarLayer.Dimension[0].values.split(',');
       const layerConfig = this.weatherlayers.find(l => l.value === this.weatherlayername.value);
-      // console.log(layerConfig)
-      if ('Dimension' in layer) {
+      // console.log(layerConfig, layer);
+      if ('Dimension' in layer && Array.isArray(layer.Dimension)) {
         const allDates = checkDimensionTime(layer.Dimension[0]);
         if (layerConfig && (layerConfig.startDate || layerConfig.endDate)) {
           this.datesString = getDatesBetween(allDates, layerConfig.startDate, layerConfig.endDate);
@@ -470,7 +481,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         this.snackbar.open(`Layer without Time Dimension`, 'Close');
       }
 
-
+      
 
       if (!refresh && this.datesString?.length) {
         const startTimeIndex = this.datesString.indexOf(this.currentState.time);
@@ -484,7 +495,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
 
-      this.addLayer(layer, this.startState.time, { zoom: this.currentState.zoom, center: this.currentState.center });
+      this.addLayer(layer, this.startState.time, { zoom: this.currentState.zoom, center: this.currentState.center }, layerConfig.popup);
 
       if ('Style' in layer) {
         this.legendurl = layer.Style[0].LegendURL[0].OnlineResource;
@@ -499,7 +510,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  addLayer(Layer, startTime: string, zoomCenter: { zoom?: number, center?: number[] }) {
+  addLayer(Layer, startTime: string, zoomCenter: { zoom?: number, center?: number[] }, popup?:boolean) {
     let layersextent = Layer.BoundingBox.filter(item => item.crs === this.EPSGCODE);
     if (!layersextent.length) {
       layersextent = this.fallbackExtent;
@@ -527,6 +538,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       extent: layersextent,
       source: this.timeSource
     });
+    this.layer.set('name','wms-layer');
+    if(popup){
+      this.layer.set('popup',true);
+    }
 
     // layer.set('title',Layer.Title);
     this.layertitle = Layer.Title;
