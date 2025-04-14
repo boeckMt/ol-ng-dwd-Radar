@@ -454,14 +454,16 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         } else {
           this.datesString = allDates;
         }
+
+        // here timeslider is finds the start date -> findClosestDate()
+        this.startState.time = this.datesString[0];
       } else {
         this.snackbar.open(`Layer without Time Dimension`, 'Close');
       }
 
-      // here timeslider is finds the start date -> findClosestDate()
-      this.startState.time = this.datesString[0];
 
-      if (!refresh) {
+
+      if (!refresh && this.datesString?.length) {
         const startTimeIndex = this.datesString.indexOf(this.currentState.time);
         if (startTimeIndex !== -1) {
           // here timeslider uses this date if existing
@@ -495,19 +497,22 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       layersextent = layersextent[0].extent;
     }
-    this.timeSource = new TileWMS({
+    const tileWmsConfig:any = {
       attributions: ['&copy; <a href="https://www.dwd.de/DE/service/copyright/copyright_node.html" target="_blank">DWD</a>'],
       url: this.wmsurl,
       params: {
         LAYERS: `dwd:${Layer.Name}`,
         VERSION: '1.3.0',
         CRS: this.view.getProjection(), // Layer.CRS[0]
-        TIME: startTime,
         TILED: true
       },
       serverType: 'geoserver',
       tileGrid: getTileGrid(layersextent, this.EPSGCODE)
-    });
+    };
+    if(startTime){
+      tileWmsConfig.TIME = startTime;
+    }
+    this.timeSource = new TileWMS(tileWmsConfig);
 
     this.layer = new TileLayer({
       extent: layersextent,
