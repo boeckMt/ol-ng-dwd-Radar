@@ -135,8 +135,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   EPSGCODE = 'EPSG:3857';
   capabilities: Icapabilities;
 
-  wmsurl = 'https://maps.dwd.de/geoserver/dwd/wms';
-
   timeSource: TileWMS;
   layer: TileLayer<TileWMS>;
   /** EPSG:3857 */
@@ -184,6 +182,20 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public isLoading() {
     return this.progressBar.mode === 'indeterminate';
+  }
+
+  /** get name e.g. Fachlayer.Wetter.Radar.Radar_wn-product_1x1km_ger -> Radar_wn-product_1x1km_ger */
+  public getWmsUrl(layerName?: string) {
+    if (layerName) {
+      const layerArray = this.weatherlayername.value.split('.');
+      let _layerName = layerName;
+      if (layerArray.length > 1) {
+        _layerName = layerArray.pop();
+      }
+      return `https://maps.dwd.de/geoserver/dwd/${_layerName}/wms`;
+    } else {
+      return `https://maps.dwd.de/geoserver/dwd/wms`;
+    }
   }
 
   public refresh() {
@@ -407,9 +419,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       } else {
         this.progressBar.color = 'primary';
         const parser = new WMSCapabilities();
-        return fetch(`${this.wmsurl}?service=wms&request=GetCapabilities&version=1.3.0`).then(async response => {
+        const url = this.getWmsUrl(layerName);
+
+        return fetch(`${url}?service=wms&request=GetCapabilities&version=1.3.0`).then(async response => {
           if (response.ok) {
-            window.localStorage.setItem('cpasLoadTime', DateTime.local().toISO());
             const data = await response.text();
             // console.log('fresh caps');
             this.progressBar.mode = null;
@@ -457,6 +470,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
+
     // -----------------------------------
     // this.weatherlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
     // console.log(this.weatherlayername.value);
@@ -501,8 +515,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         this.legendurl = layer.Style[0].LegendURL[0].OnlineResource;
       }
 
-      this.layerCapsUrl = `${this.wmsurl}?service=WMS&version=1.3.0&request=GetCapabilities&searchForLayer=${layer.Name}`
-      console.log(layer)
+      const url = this.getWmsUrl(this.weatherlayername.value);
+      this.layerCapsUrl = `${url}?service=WMS&version=1.3.0&request=GetCapabilities`
 
     } else {
       // console.log(caps);
@@ -517,9 +531,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       layersextent = layersextent[0].extent;
     }
-    const tileWmsConfig:any = {
+    const tileWmsConfig: any = {
       attributions: ['&copy; <a href="https://www.dwd.de/DE/service/copyright/copyright_node.html" target="_blank">DWD</a>'],
-      url: this.wmsurl,
+      url: this.getWmsUrl(),
       params: {
         LAYERS: `dwd:${Layer.Name}`,
         VERSION: '1.3.0',
