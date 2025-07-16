@@ -492,7 +492,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         // here timeslider is finds the start date -> findClosestDate()
         this.startState.time = this.datesString[0];
       } else {
-        this.snackbar.open(`Layer without Time Dimension`, 'Close');
+        this.datesString = [];
+        this.snackbar.open(`Layer without Time Dimension`, 'Close', {panelClass: ['style-success']});
       }
 
       
