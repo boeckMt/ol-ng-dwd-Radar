@@ -94,8 +94,7 @@ export class TimeSliderComponent implements OnChanges {
 
   ngOnChanges(changes: any) {
     // only run when property "dates" changed
-    if (changes['dates'] && this.dates && this.dates.length > 0) {
-      // console.log(this.dates)
+    if (changes['dates'] && changes['dates'].currentValue?.length) {
       this.isdisabled = false;
       this.sMax = this.dates.length - 1;
       this.dValue = this.dates[this.sMin];
@@ -119,6 +118,8 @@ export class TimeSliderComponent implements OnChanges {
       }
 
       this.sliderOnChange();
+    }else{
+      this.isdisabled = true;
     }
   }
 }
