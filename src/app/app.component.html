@@ -24,7 +24,7 @@
       (dateChange)="sliderOnChange($event)"></app-time-slider>
     </mat-toolbar-row>
     <mat-toolbar-row class="bottom-toolbar">
-      <span class="title">
+      <span class="title" [ngClass]="{'disable':!datesString.length}">
         {{ currentState.time | date: 'dd/M/yyyy - HH:mm'}}
       </span>
       <button mat-icon-button aria-label="share map" title="share current map view" (click)="shareLink()">
