@@ -130,6 +130,10 @@ main {
     width: 100%;
     white-space: normal;
     text-align: center;
+
+    &.disable{
+      color: rgba(0, 0, 0, 0.26);
+    }
   }
 }
 
