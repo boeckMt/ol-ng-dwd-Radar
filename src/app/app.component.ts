@@ -93,14 +93,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'Fachlayer.Wetter.Radar.Niederschlagsradar', viewValue: 'Niederschlagsradar (RV-Produkt)' },
     { value: 'Fachlayer.Wetter.Radar.RADOLAN-RW', viewValue: 'angeeichtes Radarkomposit (RW)' },
     { value: 'Fachlayer.Wetter.Radar.RADOLAN-RY', viewValue: 'Qualitätsgeprüfte Radardaten (RY)' },
-    
+
     // { value: 'Fachlayer.Wetter.Radar.Radar_wn-analysis_1x1km_ger', viewValue: 'Deutsches Radarkomposit WN', startDate: addHours(DateTime.local().toISO(), 2, '-') },
     // https://www.dwd.de/DE/leistungen/radarprodukte/radarkomposit_rv.html
     { value: 'Fachlayer.Wetter.Radar.SF-Produkt', viewValue: 'Radarkomposit 24h-Aufsummierung - alle 60 Minuten' },
     { value: 'Fachlayer.Wetter.Radar.RADOLAN-W4', viewValue: 'Radarkomposit 30 Tage (SF-Produkt) - täglich' },
 
-    
-    { value: 'Basislayer.EUCOS_surface_stations', viewValue: 'EUCOS Bodenstationen', popup:true },
+
+    { value: 'Basislayer.EUCOS_surface_stations', viewValue: 'EUCOS Bodenstationen', popup: true },
 
     { value: 'Fachlayer.Wetter.Mittelfristvorhersagen.GefuehlteTemp', viewValue: 'Gefühlte Temperatur' },
     { value: 'Fachlayer.Wetter.Beobachtungen.RBSN_T2m', viewValue: 'Temperatur 2m' },
@@ -355,7 +355,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       const extent = this.map.getView().calculateExtent(this.map.getSize());
       // console.log(zoom, center, extent);
       // console.log(this.reportPlaces);
-      getFeatureInfo(this.map,evt, this.reportPlaces);
+      getFeatureInfo(this.map, evt, this.reportPlaces);
       // displayFeatureInfo(this.map, evt);
     });
     this.mapSubs.push(mapOnClick);
@@ -373,7 +373,16 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.view.setRotation(0);
     const overlays = this.getOverlays();
     overlays.getLayers().clear();
-    return this.getWmsCaps().then((caps) => {
+
+
+    const { search } = getUrlLocation();
+    const query = getSearchParamsFronString(search);
+    const layerViewValue = query.get('layer');
+    if (layerViewValue) {
+      this.weatherlayername.setValue(layerViewValue)
+    }
+    // console.log(this.weatherlayername.value);
+    return this.getWmsCaps(this.weatherlayername.value).then((caps) => {
       return caps;
     }).catch((err) => {
       this.progressBar.mode = null;
@@ -385,16 +394,19 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  async getWmsCaps() {
+  // layer Name singe or layer.child.child.
+  async getWmsCaps(layerName?: string) {
     this.progressBar.mode = 'indeterminate';
-    const localCaps = window.localStorage.getItem('lastLocalCpas');
+    /** store caps for layer in local sore and req time */
+    const layerNameHash = layerName;
+    const storeItemName = `lastLocalCpas_${layerNameHash}`;
+    const storeItemTimeName = `cpasLoadTime_${layerNameHash}`
+    const localCaps = window.localStorage.getItem(storeItemName);
 
-    // for debugging
+    // For debugging, always use the caps from the store
     if (this.useCapsFromStore && localCaps) {
-      if (!this.capabilities) {
-        this.capabilities = JSON.parse(localCaps) as Icapabilities;
-      }
-
+      // console.log('get cache caps local', layerNameHash, localCaps);
+      this.capabilities = JSON.parse(localCaps) as Icapabilities;
       this.progressBar.color = 'debug';
       // console.log('cache caps', this.capabilities);
       return new Promise<Icapabilities>((resolve, reject) => {
@@ -405,11 +417,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
     } else {
-      window.localStorage.removeItem('lastLocalCpas');
-      const cpasLoadTime = window.localStorage.getItem('cpasLoadTime');
-      if (!checkIf5MinutesLater(DateTime.fromISO(cpasLoadTime)) && this.capabilities) {
+      const cpasLoadTime = window.localStorage.getItem(storeItemTimeName);
+      const lastLoadTime = DateTime.fromISO(cpasLoadTime);
+      
+      /** if caps in store and < 5 min old use this */
+      if (localCaps && lastLoadTime.isValid && !checkIf5MinutesLater(lastLoadTime)) {
+        this.capabilities = JSON.parse(localCaps) as Icapabilities;
         this.progressBar.color = 'accent';
-        // console.log('cache caps', this.capabilities);
+        // console.log('get cache caps < 5min');
         return new Promise<Icapabilities>((resolve, reject) => {
           setTimeout(() => {
             this.progressBar.mode = null;
@@ -417,9 +432,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
           }, 500);
         });
       } else {
+        /** if caps in store but > 5 min request new and store it again. */
         this.progressBar.color = 'primary';
         const parser = new WMSCapabilities();
         const url = this.getWmsUrl(layerName);
+        // console.log('req new caps')
 
         return fetch(`${url}?service=wms&request=GetCapabilities&version=1.3.0`).then(async response => {
           if (response.ok) {
@@ -427,9 +444,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
             // console.log('fresh caps');
             this.progressBar.mode = null;
             const caps = parser.read(data) as Icapabilities;
-            if (this.useCapsFromStore) {
-              window.localStorage.setItem('lastLocalCpas', JSON.stringify(caps));
-            }
+            window.localStorage.setItem(storeItemTimeName, DateTime.local().toISO());
+            window.localStorage.setItem(storeItemName, JSON.stringify(caps));
             return caps;
           } else {
             throw new Error(`status code: ${response.status}`);
@@ -472,13 +488,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
     // -----------------------------------
-    // this.weatherlayername.value = 'SF-Produkt'; //FX-Produkt, RX-Produkt, SF-Produkt, SF-Produkt_(0-24)
-    // console.log(this.weatherlayername.value);
     const layer = findLayerRecursive(allLayers, this.weatherlayername.value);
+    //console.log('search layer', this.weatherlayername.value, layer,allLayers, );
+
     if (layer) {
-      // console.log(RadarLayer);
-      // this.checkDimensionTime(RadarLayer.Dimension[0]);
-      // this.datesString = RadarLayer.Dimension[0].values.split(',');
       const layerConfig = this.weatherlayers.find(l => l.value === this.weatherlayername.value);
       // console.log(layerConfig, layer);
       if ('Dimension' in layer && Array.isArray(layer.Dimension)) {
@@ -496,7 +509,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         this.snackbar.open(`Layer without Time Dimension`, 'Close', {panelClass: ['style-success']});
       }
 
-      
+
 
       if (!refresh && this.datesString?.length) {
         const startTimeIndex = this.datesString.indexOf(this.currentState.time);
@@ -525,7 +538,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  addLayer(Layer, startTime: string, zoomCenter: { zoom?: number, center?: number[] }, popup?:boolean) {
+  addLayer(Layer, startTime: string, zoomCenter: { zoom?: number, center?: number[] }, popup?: boolean) {
     let layersextent = Layer.BoundingBox.filter(item => item.crs === this.EPSGCODE);
     if (!layersextent.length) {
       layersextent = this.fallbackExtent;
@@ -544,7 +557,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       serverType: 'geoserver',
       tileGrid: getTileGrid(layersextent, this.EPSGCODE)
     };
-    if(startTime){
+    if (startTime) {
       tileWmsConfig.TIME = startTime;
     }
     this.timeSource = new TileWMS(tileWmsConfig);
@@ -553,9 +566,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       extent: layersextent,
       source: this.timeSource
     });
-    this.layer.set('name','wms-layer');
-    if(popup){
-      this.layer.set('popup',true);
+    this.layer.set('name', 'wms-layer');
+    if (popup) {
+      this.layer.set('popup', true);
     }
 
     // layer.set('title',Layer.Title);
