@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import olMap from 'ol/Map';
 import { addFileLayer } from '../map.utills';
 import { MatButton } from '@angular/material/button';
@@ -10,6 +10,7 @@ import { MatLabel } from '@angular/material/form-field';
     standalone: true,
     templateUrl: './import-data.component.html',
     styleUrls: ['./import-data.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [MatButton, MatLabel]
 })
 export class ImportDataComponent {

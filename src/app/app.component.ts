@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 
 import { IdateChange, TimeSliderComponent } from './time-slider/time-slider.component';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -65,6 +65,7 @@ export interface IweatherlayerItem {
   styleUrls: ['app.component.scss'],
   encapsulation: ViewEncapsulation.None,
   // FormsModule, ReactiveFormsModule,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatToolbar, MatToolbarRow, MatProgressBar, MatIcon, MatIconButton, NgClass, TimeSliderComponent, MatFormField, MatSelect, MatOption, MatSlider, MatSliderThumb, DwdWeatherReportsComponent, ImportDataComponent, DatePipe, ReactiveFormsModule]
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {

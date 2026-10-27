@@ -1,4 +1,4 @@
-import { Input } from '@angular/core';
+import { Input, ChangeDetectionStrategy } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
 import { MatFormField } from '@angular/material/form-field';
 import { MatSelect } from '@angular/material/select';
@@ -14,6 +14,7 @@ import { ILocationItem, IPlaceItem } from '../data.utills';
   standalone: true,
   templateUrl: './dwd-weather-reports.component.html',
   styleUrls: ['./dwd-weather-reports.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatFormField, MatSelect, MatOption]
 })
 export class DwdWeatherReportsComponent implements OnInit {

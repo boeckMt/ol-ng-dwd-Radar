@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges } from '@angular/core';
+import { Component, OnInit, OnChanges, ChangeDetectionStrategy } from '@angular/core';
 import { Input, Output, EventEmitter } from '@angular/core';
 import { DatePipe, NgClass } from '@angular/common';
 import { findClosestDate } from '../utills';
@@ -17,6 +17,7 @@ export interface IdateChange {
     templateUrl: './time-slider.component.html',
     styleUrls: ['./time-slider.component.scss'],
     providers: [DatePipe],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [MatIconButton, MatIcon, NgClass, MatSlider, MatSliderThumb, FormsModule]
 })
 export class TimeSliderComponent implements OnChanges {
