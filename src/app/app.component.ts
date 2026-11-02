@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, OnInit, HostBinding, AfterViewInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 
 import { IdateChange, TimeSliderComponent } from './time-slider/time-slider.component';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import olView from 'ol/View';
@@ -22,7 +22,7 @@ import { defaults as defaultControls } from 'ol/control/defaults';
 import { currentVersionKey, newVersionKey, PwaHelper } from './pwa.helper';
 import { DateTime } from 'luxon';
 import { WMSCapabilities } from 'ol/format';
-import { Icapabilities } from './ogc.types';
+import { Icapabilities, LayerEntity } from './ogc.types';
 import { checkIf5MinutesLater, checkDimensionTime, formatDate, getDatesBetween, addHours, getLocation as getUrlLocation, getSearchParamsFronString, getShareLink } from './utills';
 import { addLocationLayer, findLayerRecursive, getFeatureInfo, getLocation, getTileGrid } from './map.utills';
 import { ElementRef } from '@angular/core';
@@ -31,6 +31,7 @@ import { ProgressBarMode, MatProgressBar } from '@angular/material/progress-bar'
 import { ButtonControl } from './ol-custom-control';
 import { environment } from './../environments/environment';
 import { EventsKey } from 'ol/events';
+import { Extent } from 'ol/extent';
 import { unByKey } from 'ol/Observable';
 import { NgClass, DatePipe } from '@angular/common';
 import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
@@ -45,7 +46,7 @@ import { ILocationItem, initLocations, IPlaceItem } from './data.utills';
 
 
 export interface IProgress {
-  mode: ProgressBarMode;
+  mode: ProgressBarMode | null;
   color: ThemePalette | 'debug';
 }
 
@@ -76,8 +77,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   useCapsFromStore = true;
 
   swVersion = {
-    current: null,
-    available: null
+    current: null as string | null,
+    available: null as string | null
   };
 
   mapSubs: EventsKey[] = [];
@@ -113,8 +114,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Analyse', viewValue: 'Autowarn_Analyse' },
     { value: 'Fachlayer.Wetter.Kurzfristvorhersagen.Autowarn_Vorhersage', viewValue: 'Autowarn_Vorhersage' },
   ];
-  public weatherlayername = new FormControl<string>(this.weatherlayers[0]?.value ?? null);
-  public datesString: string[];
+  public weatherlayername = new FormControl<string | null>(this.weatherlayers[0]?.value ?? null);
+  public datesString: string[] = [];
 
   public legendurl = '';
   public layerCapsUrl = '';
@@ -126,32 +127,32 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   public layertitle = 'DWD Radar';
   public layerdescription = '';
   public dwdinfo: {
-    link: string,
-    title: string
+    link: string | null,
+    title: string | null
   } = { link: null, title: null };
 
 
-  map: olMap;
-  view: olView;
+  map!: olMap;
+  view!: olView;
   EPSGCODE = 'EPSG:3857';
-  capabilities: Icapabilities;
+  capabilities!: Icapabilities;
 
-  timeSource: TileWMS;
-  layer: TileLayer<TileWMS>;
+  timeSource!: TileWMS;
+  layer!: TileLayer<TileWMS>;
   /** EPSG:3857 */
-  fallbackExtent = [183082.1073087257, 5345076.652029778, 2017570.7861529556, 7786169.587345167];
+  fallbackExtent: Extent = [183082.1073087257, 5345076.652029778, 2017570.7861529556, 7786169.587345167];
   /** Muenchen */
-  public startState = {
+  public startState: { title: string; center: number[]; zoom: number; time: string | null; layer: string } = {
     title: 'München',
     center: [1288323.189210665, 6134720.493257317],
     zoom: 9,
     time: null,
-    layer: this.weatherlayers[0]?.viewValue
+    layer: this.weatherlayers[0].viewValue
   }
 
   currentLocation = {
     isLocated: false,
-    layer: null
+    layer: null as ReturnType<typeof addLocationLayer> | null
   }
 
   public currentState: {
@@ -171,7 +172,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.currentState = {
       zoom: this.startState.zoom,
       center: this.startState.center,
-      time: this.startState.time,
+      time: this.startState.time ?? '',
       layer: this.startState.layer
     };
     const pl = initLocations()
@@ -188,10 +189,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   /** get name e.g. Fachlayer.Wetter.Radar.Radar_wn-product_1x1km_ger -> Radar_wn-product_1x1km_ger */
   public getWmsUrl(layerName?: string) {
     if (layerName) {
-      const layerArray = this.weatherlayername.value.split('.');
+      const layerArray = this.weatherlayername.value?.split('.') ?? [];
       let _layerName = layerName;
       if (layerArray.length > 1) {
-        _layerName = layerArray.pop();
+        _layerName = layerArray.pop() ?? layerName;
       }
       return `https://maps.dwd.de/geoserver/dwd/${_layerName}/wms`;
     } else {
@@ -211,10 +212,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public shareLink() {
     const link = getShareLink({
-      time: this.currentState.time,
+      time: this.currentState.time || undefined,
       zoom: this.currentState.zoom.toFixed(3),
       center: this.currentState.center.map(i => i.toFixed(3)).join(','),
-      layer: this.weatherlayername.value
+      layer: this.weatherlayername.value ?? undefined
     });
     this.pwaHelper.shareLink(link);
   }
@@ -241,8 +242,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.refresh();
   }
 
-  public setLayerOpacity(event) {
-    this.layer.setOpacity(parseFloat(event.target.value));
+  public setLayerOpacity(event: Event) {
+    const target = event.target;
+    if (target instanceof HTMLInputElement) {
+      this.layer.setOpacity(target.valueAsNumber);
+    }
   }
 
   public getLayerOpacity(): number {
@@ -383,7 +387,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       this.weatherlayername.setValue(layerViewValue)
     }
     // console.log(this.weatherlayername.value);
-    return this.getWmsCaps(this.weatherlayername.value).then((caps) => {
+    return this.getWmsCaps(this.weatherlayername.value ?? undefined).then((caps) => {
       return caps;
     }).catch((err) => {
       this.progressBar.mode = null;
@@ -419,7 +423,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
     } else {
       const cpasLoadTime = window.localStorage.getItem(storeItemTimeName);
-      const lastLoadTime = DateTime.fromISO(cpasLoadTime);
+      const lastLoadTime = DateTime.fromISO(cpasLoadTime ?? '');
       
       /** if caps in store and < 5 min old use this */
       if (localCaps && lastLoadTime.isValid && !checkIf5MinutesLater(lastLoadTime)) {
@@ -489,7 +493,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
     // -----------------------------------
-    const layer = findLayerRecursive(allLayers, this.weatherlayername.value);
+    const layer = findLayerRecursive(allLayers, this.weatherlayername.value ?? '');
     //console.log('search layer', this.weatherlayername.value, layer,allLayers, );
 
     if (layer) {
@@ -504,7 +508,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         // here timeslider is finds the start date -> findClosestDate()
-        this.startState.time = this.datesString[0];
+        this.startState.time = this.datesString[0] ?? null;
       } else {
         this.datesString = [];
         this.snackbar.open(`Layer without Time Dimension`, 'Close', {panelClass: ['style-success']});
@@ -524,13 +528,13 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
 
-      this.addLayer(layer, this.startState.time, { zoom: this.currentState.zoom, center: this.currentState.center }, layerConfig.popup);
+      this.addLayer(layer, this.startState.time, { zoom: this.currentState.zoom, center: this.currentState.center }, layerConfig?.popup);
 
       if ('Style' in layer) {
-        this.legendurl = layer.Style[0].LegendURL[0].OnlineResource;
+        this.legendurl = layer.Style?.[0]?.LegendURL?.[0]?.OnlineResource ?? '';
       }
 
-      const url = this.getWmsUrl(this.weatherlayername.value);
+      const url = this.getWmsUrl(this.weatherlayername.value ?? undefined);
       this.layerCapsUrl = `${url}?service=WMS&version=1.3.0&request=GetCapabilities`
 
     } else {
@@ -539,13 +543,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  addLayer(Layer, startTime: string, zoomCenter: { zoom?: number, center?: number[] }, popup?: boolean) {
-    let layersextent = Layer.BoundingBox.filter(item => item.crs === this.EPSGCODE);
-    if (!layersextent.length) {
-      layersextent = this.fallbackExtent;
-    } else {
-      layersextent = layersextent[0].extent;
-    }
+  addLayer(Layer: LayerEntity & { Abstract?: string | null }, startTime: string | null, zoomCenter: { zoom?: number, center?: number[] }, popup?: boolean) {
+    const layerExtent = Layer.BoundingBox?.find(item => item.crs === this.EPSGCODE)?.extent;
+    const layersextent: Extent = layerExtent?.length === 4 ? layerExtent as Extent : this.fallbackExtent;
     const tileWmsConfig: any = {
       attributions: ['&copy; <a href="https://www.dwd.de/DE/service/copyright/copyright_node.html" target="_blank">DWD</a>'],
       url: this.getWmsUrl(),
@@ -575,7 +575,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     // layer.set('title',Layer.Title);
     this.layertitle = Layer.Title;
     // layer.set('description',Layer.Abstract)
-    this.layerdescription = Layer.Abstract;
+    this.layerdescription = Layer.Abstract ?? '';
     this.layer.setOpacity(0.7);
 
     const overlays = this.getOverlays();
@@ -590,19 +590,19 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const mapOnMove = this.map.on('moveend', (evt) => {
-      this.currentState.center = this.map.getView().getCenter();
-      this.currentState.zoom = this.map.getView().getZoom();
+      this.currentState.center = this.map.getView().getCenter() ?? this.currentState.center;
+      this.currentState.zoom = this.map.getView().getZoom() ?? this.currentState.zoom;
     });
     this.mapSubs.push(mapOnMove);
   }
 
   getOverlays() {
-    let layer: LayerGroup;
-    this.map.getLayers().forEach((_layer: LayerGroup) => {
-      if (_layer.get('name') === 'overlays') {
-        layer = _layer;
-      }
-    });
+    const layer = this.map.getLayers().getArray().find(candidate =>
+      candidate instanceof LayerGroup && candidate.get('name') === 'overlays'
+    );
+    if (!(layer instanceof LayerGroup)) {
+      throw new Error('Overlay layer group was not initialized');
+    }
     return layer;
   }
 }

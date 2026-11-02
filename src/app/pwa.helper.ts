@@ -88,7 +88,7 @@ export class PwaHelper {
     }
   }
 
-  beforeinstallprompt = (event) => {
+  beforeinstallprompt = (event: Event) => {
     event.preventDefault();
     const sb = this.snackbar.open('Do you want to install this App?', 'Install', { duration: 5000 });
     const sub = sb.onAction().subscribe(() => {

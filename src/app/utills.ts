@@ -1,20 +1,24 @@
 import { DateTime, Duration } from 'luxon';
+import { DimensionEntity } from './ogc.types';
 
 export function enumerateDaysBetweenDates(startDate: string, endDate: string, duaration: string) {
   // console.log('dates: ', startDate, endDate);
-  const dates = [];
+  const dates: string[] = [];
 
   const currDate = DateTime.fromISO(startDate).toUTC();
   const lastDate = DateTime.fromISO(endDate).toUTC();
   const period = Duration.fromISO(duaration);
 
   const _formatedDate = currDate.toISO(); // .toFormat('yyyy-MM-dd HH:mm:ss.SSS').replace(' ', 'T') + 'Z';
-  dates.push(_formatedDate);
-
+  if (_formatedDate) {
+    dates.push(_formatedDate);
+  }
   let nextDate = currDate.plus(period);
   while (nextDate.diff(lastDate).milliseconds <= 0) {
     const formated = nextDate.toISO(); // .toFormat('yyyy-MM-dd HH:mm:ss.SSS').replace(' ', 'T') + 'Z';
-    dates.push(formated);
+    if (formated) {
+      dates.push(formated);
+    }
     nextDate = nextDate.plus(period);
   }
   // console.log('dates', dates);
@@ -58,6 +62,7 @@ export function getDatesBetween(dates: string[], startDate?: string, endDate?: s
       }
     });
   }
+  return dates;
 }
 
 export function addDays(currentTime: string, days: number, action: '-' | '+' = '+') {
@@ -119,7 +124,7 @@ export function checkIf5MinutesLater(cpasLoadTime: DateTime) {
 /**
   * check if rage or values
   */
-export function checkDimensionTime(Dimension) {
+export function checkDimensionTime(Dimension: DimensionEntity): string[] {
   // console.log(Dimension);
   if (Dimension.name === 'time') {
     let values = Dimension.values.split(',');
@@ -127,6 +132,7 @@ export function checkDimensionTime(Dimension) {
       values = Dimension.values.split('/');
       if (values.length === 1) { // Split fails
         console.log('time Fotmate not known!', values);
+          return [];
       } else {
         return generateTimeFromRange(values);
       }
@@ -136,6 +142,7 @@ export function checkDimensionTime(Dimension) {
     // console.log(values);
   } else {
     console.log('no time Dimension!', Dimension.name);
+    return [];
   }
 }
 
@@ -282,7 +289,7 @@ export function getShareLink(params: { time?: string, zoom?: string, center?: st
   const { origin, pathname, search } = getLocation();
 
   const query = getSearchParamsFronString(search);
-  Object.keys(params).map(key => {
+  (Object.keys(params) as Array<keyof typeof params>).forEach(key => {
     if (params[key]) {
       query.set(key, params[key]);
     } else {

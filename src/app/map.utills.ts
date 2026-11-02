@@ -12,20 +12,23 @@ import PointGeom from 'ol/geom/Point';
 import LineGeom from 'ol/geom/LineString';
 import VectorSource from 'ol/source/Vector';
 import { Coordinate } from 'ol/coordinate';
-import { Feature, MapBrowserEvent, Overlay } from 'ol';
+import { MapBrowserEvent, Overlay } from 'ol';
+import Feature from 'ol/Feature';
+import Geometry from 'ol/geom/Geometry';
+import { Extent } from 'ol/extent';
 import CircleStyle from 'ol/style/Circle';
 import { Fill, Style, Stroke, Circle } from 'ol/style';
 import TileWMS from 'ol/source/TileWMS';
 import { IPlaceItem } from './data.utills';
 
 
-export function findLayerRecursive(lLayergroup: Layer | LayerEntity, path: string) {
+export function findLayerRecursive(lLayergroup: Layer | LayerEntity | null | undefined, path: string) {
   if (!lLayergroup || !path || path.length === 0) {
     return null;
   }
   const names: Array<string> = path.split('.');
   if (names.length > 0) {
-    for (const layer of lLayergroup.Layer) {
+    for (const layer of lLayergroup.Layer ?? []) {
       if (layer.Name === names[0]) {
         if (layer.Layer && names.length > 1) {
           names.shift();
@@ -40,8 +43,12 @@ export function findLayerRecursive(lLayergroup: Layer | LayerEntity, path: strin
 
 }
 
-export function getTileGrid(extent, EPSG) {
-  const projExtent = getProjection(EPSG).getExtent();
+export function getTileGrid(extent: Extent, EPSG: string) {
+  const projection = getProjection(EPSG);
+  if (!projection) {
+    throw new Error(`Unknown projection: ${EPSG}`);
+  }
+  const projExtent = projection.getExtent();
   const startResolution = getWidth(projExtent) / 256;
   const resolutions = new Array(22);
   for (let i = 0, ii = resolutions.length; i < ii; ++i) {
@@ -54,7 +61,7 @@ export function getTileGrid(extent, EPSG) {
   });
 }
 
-export function getLocation(EPSGCODE, cb: (coordinates?: Coordinate) => void) {
+export function getLocation(EPSGCODE: string, cb: (coordinates?: Coordinate) => void) {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
       const coordinates = transform([position.coords.longitude, position.coords.latitude], 'EPSG:4326', EPSGCODE);
@@ -107,7 +114,7 @@ export function addLocationLayer(map: Map, coordinates: Coordinate) {
  * 
  * @param data GPX or GeoJSON
  */
-export function addFileLayer(map: Map, data: string, remove?: boolean) {
+export function addFileLayer(map: Map, data?: string, remove?: boolean) {
   const mapLayers = map.getAllLayers().filter(l => l.get('id')?.includes('FileLayer'));
 
   if (remove) {
@@ -117,9 +124,12 @@ export function addFileLayer(map: Map, data: string, remove?: boolean) {
 
     return;
   }
+  if (!data) {
+    return;
+  }
 
-  let features = [];
-  const styles = {};
+  let features: Feature<Geometry>[] = [];
+  const styles: Record<string, Style[]> = {};
   const white = [255, 255, 255, 1];
   const blue = [0, 153, 255, 1];
   const width = 3;
@@ -176,7 +186,7 @@ export function addFileLayer(map: Map, data: string, remove?: boolean) {
     const gpx = new GPX({
     });
     features = gpx.readFeatures(data).map(f => {
-      f.getGeometry().transform('EPSG:4326', mapEpsg)
+      f.getGeometry()?.transform('EPSG:4326', mapEpsg)
       return f;
     });
   } else {
@@ -196,12 +206,13 @@ export function addFileLayer(map: Map, data: string, remove?: boolean) {
   }
 
   if (features.length) {
-    const fileLayer = new VectorLayer<VectorSource<PointGeom | LineGeom>>({
+    const fileLayer = new VectorLayer<VectorSource<Geometry>>({
       source: new VectorSource({
         features: features
       }),
       style: (feature) => {
-        return styles[feature.getGeometry().getType()];
+        const geometry = feature.getGeometry();
+        return geometry ? styles[geometry.getType()] : undefined;
       }
     })
     if (mapLayers.length) {
@@ -210,8 +221,10 @@ export function addFileLayer(map: Map, data: string, remove?: boolean) {
       fileLayer.set('id', `FileLayer-${mapLayers.length + 1}`);
     }
 
-    const layerExt = fileLayer.getSource().getExtent();
-    map.getView().fit(layerExt);
+    const source = fileLayer.getSource();
+    if (source) {
+      map.getView().fit(source.getExtent());
+    }
 
 
 
@@ -241,11 +254,15 @@ export function createImageLayer() {
 
 }
 
-let currentFeature;
+let currentFeature: unknown;
 export function displayFeatureInfo(map: Map, evt: MapBrowserEvent<any>) {
   const info = document.getElementById('info');
+  if (!info) {
+    return;
+  }
   const pixel = evt.pixel;
-  const feature = evt.originalEvent.target.closest('.ol-control')
+  const target = evt.originalEvent.target;
+  const feature = target instanceof Element && target.closest('.ol-control')
     ? undefined
     : map.forEachFeatureAtPixel(evt.pixel, function (feature) {
       return feature;
@@ -289,8 +306,6 @@ function createPopupHtml(obj: any) {
 
 
 export function getFeatureInfo(map: Map, evt: MapBrowserEvent<any>, places?:IPlaceItem[]) {
-  const info = document.getElementById('info');
-
   const content = document.createElement('div');
   content.className = 'ol-popup-content';
   const popupID = 'layer_popup';
@@ -314,6 +329,9 @@ export function getFeatureInfo(map: Map, evt: MapBrowserEvent<any>, places?:IPla
     const wmsSource = infoLayer.getSource() as TileWMS;
     const view = map.getView();
     const viewResolution = view.getResolution();
+    if (viewResolution === undefined) {
+      return;
+    }
     const epsg = view.getProjection().getCode()
     const url = wmsSource.getFeatureInfoUrl(
       evt.coordinate,
@@ -348,8 +366,11 @@ export function getFeatureInfo(map: Map, evt: MapBrowserEvent<any>, places?:IPla
               }else{
                 content.innerHTML = createPopupHtml(feature.properties);
               }
-              map.removeOverlay(getOverlays(map, popupID)[0]);
-              let coordinate;
+              const oldPopup = getOverlays(map, popupID)[0];
+              if (oldPopup) {
+                map.removeOverlay(oldPopup);
+              }
+              let coordinate: Coordinate;
               
               if (feature && feature.geometry.type === 'Point') {
                 coordinate = feature.geometry.coordinates;
@@ -362,12 +383,18 @@ export function getFeatureInfo(map: Map, evt: MapBrowserEvent<any>, places?:IPla
               map.addOverlay(popup);
 
             } else {
-              console.log('remove overlay no feature', getOverlays(map, popupID)[0])
-              map.removeOverlay(getOverlays(map, popupID)[0]);
+              const oldPopup = getOverlays(map, popupID)[0];
+              console.log('remove overlay no feature', oldPopup)
+              if (oldPopup) {
+                map.removeOverlay(oldPopup);
+              }
             }
           } else {
-            console.log('remove overlay no features', getOverlays(map, popupID)[0])
-            map.removeOverlay(getOverlays(map, popupID)[0]);
+            const oldPopup = getOverlays(map, popupID)[0];
+            console.log('remove overlay no features', oldPopup)
+            if (oldPopup) {
+              map.removeOverlay(oldPopup);
+            }
           }
           currentFeature = data.features[0];
         });
@@ -380,8 +407,9 @@ export function getFeatureInfo(map: Map, evt: MapBrowserEvent<any>, places?:IPla
 
 export function getOverlays(map: Map, id?: string) {
   if (id) {
-    return [map.getOverlayById(id)];
+    const overlay = map.getOverlayById(id);
+    return overlay ? [overlay] : [];
   } else {
-    return map.getOverlays();
+    return map.getOverlays().getArray();
   }
 }

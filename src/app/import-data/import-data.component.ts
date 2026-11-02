@@ -14,24 +14,23 @@ import { MatLabel } from '@angular/material/form-field';
     imports: [MatButton, MatLabel]
 })
 export class ImportDataComponent {
-  @ViewChild('fileInput') fileInput: ElementRef;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   @Input() map!: olMap;
   reader = new FileReader();
-  selectedFile: any;
+  selectedFile: File | null = null;
   constructor() {
 
   }
 
-  onFileSelected(event: any) {
-    this.selectedFile = event.target.files[0] ?? null;
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.selectedFile = input.files?.[0] ?? null;
     if (this.selectedFile) {
 
       this.reader.readAsText(this.selectedFile, "UTF-8");
-      this.reader.onload = (evt) => {
-        const fileData = evt.target.result;
-        if (typeof fileData !== 'string') {
-          addFileLayer(this.map, fileData.toString());
-        } else {
+      this.reader.onload = (evt: ProgressEvent<FileReader>) => {
+        const fileData = evt.target?.result;
+        if (typeof fileData === 'string') {
           addFileLayer(this.map, fileData);
         }
       }
@@ -41,7 +40,7 @@ export class ImportDataComponent {
   }
 
   removeFileLayers() {
-    addFileLayer(this.map, null, true);
+    addFileLayer(this.map, undefined, true);
     this.fileInput.nativeElement.value = '';
     this.selectedFile = null;
   }

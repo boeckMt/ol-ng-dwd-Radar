@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnChanges, ChangeDetectionStrategy, SimpleChanges } from '@angular/core';
 import { Input, Output, EventEmitter } from '@angular/core';
 import { DatePipe, NgClass } from '@angular/common';
 import { findClosestDate } from '../utills';
@@ -23,16 +23,16 @@ export interface IdateChange {
 export class TimeSliderComponent implements OnChanges {
 
   /** ISO string dates UTC */
-  @Input() dates: string[];
+  @Input() dates: string[] = [];
   @Input() startTime?: string;
   @Output('dateChange') change: EventEmitter<IdateChange> = new EventEmitter();
 
   public sValue = 0;
   public sMin = 0;
-  public sMax: number;
+  public sMax = 0;
   public sStep = 1;
 
-  dValue: string;
+  dValue = '';
   playing = false;
   intervalID: any;
   isdisabled = true;
@@ -41,7 +41,7 @@ export class TimeSliderComponent implements OnChanges {
   }
 
   formatLabel = (value: number) => {
-    const now = (this.dates && this.sValue) ? this.datePipe.transform(this.dates[this.sValue], 'HH:mm') : value;
+    const now = (this.dates.length && this.sValue) ? this.datePipe.transform(this.dates[this.sValue], 'HH:mm') ?? value : value;
     return now;
   }
 
@@ -84,16 +84,16 @@ export class TimeSliderComponent implements OnChanges {
 
   }
 
-  sliderOnChange(value?: any) {
-    this.dValue = this.dates[this.sValue];
+  sliderOnChange(_value?: unknown) {
+    this.dValue = this.dates[this.sValue] ?? '';
     this.change.emit({
       last: this.dates[this.sValue - 1],
-      now: this.dates[this.sValue],
+      now: this.dates[this.sValue] ?? '',
       next: this.dates[this.sValue + 1]
     });
   }
 
-  ngOnChanges(changes: any) {
+  ngOnChanges(changes: SimpleChanges) {
     // only run when property "dates" changed
     if (changes['dates'] && changes['dates'].currentValue?.length) {
       this.isdisabled = false;
@@ -102,7 +102,7 @@ export class TimeSliderComponent implements OnChanges {
 
 
       const dateIndex = findClosestDate(this.dates).dateBefore;
-      if (dateIndex) {
+      if (typeof dateIndex === 'number') {
         this.dValue = this.dates[dateIndex];
         this.sValue = dateIndex;
       } else {
@@ -112,7 +112,7 @@ export class TimeSliderComponent implements OnChanges {
 
       if (this.startTime) {
         const startIndex = this.dates.indexOf(this.startTime);
-        if (startIndex) {
+        if (startIndex !== -1) {
           this.dValue = this.dates[startIndex];
           this.sValue = startIndex;
         }

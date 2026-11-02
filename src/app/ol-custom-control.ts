@@ -54,7 +54,7 @@ export class ButtonControl extends Control {
 
     if (options.event) {
       if (Array.isArray(options.event)) {
-        options.event.forEach(e => {
+        options.event.forEach((e: OptionsEvent) => {
           button.addEventListener(e.type, e.fn.bind(this), false);
         });
       } else {
@@ -72,7 +72,7 @@ export class ButtonControl extends Control {
   disposeInternal() {
 
     if (Array.isArray(this.options.event)) {
-      this.options.event.forEach(e => {
+      this.options.event.forEach((e: OptionsEvent) => {
         this.button.removeEventListener(e.type, e.fn.bind(this), false);
       });
     } else {
